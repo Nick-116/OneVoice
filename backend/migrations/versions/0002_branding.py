@@ -8,7 +8,6 @@ Create Date: 2026-10-15
 import sqlalchemy as sa
 from alembic import op
 
-from captions.grants import GRANTS_SQL
 
 revision = "0002"
 down_revision = "0001"
@@ -25,7 +24,18 @@ def upgrade() -> None:
         sa.Column("sha256", sa.String(64), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
-    op.execute(GRANTS_SQL)
+    # Grants as of this revision (frozen: captions.grants tracks the newest schema only).
+    op.execute(
+        """
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'captions_worker') THEN
+            GRANT SELECT ON branding_assets TO captions_worker;
+          END IF;
+        END
+        $$;
+        """
+    )
 
 
 def downgrade() -> None:

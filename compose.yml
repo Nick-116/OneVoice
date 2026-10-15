@@ -1,5 +1,8 @@
 # OneVoice - production deployment.
 #
+# Start (or update) with:  docker compose up -d --build
+# The OneVoice images are always built locally from this repository (pull_policy: build).
+#
 # Nothing here publishes a port on the host. The only way in is through your
 # Pangolin server via the `newt` tunnel container, which can reach exactly
 # three targets:   public:8080   admin:8081   ingest:8082
@@ -86,6 +89,7 @@ services:
       target: service
       args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
     image: captions-service:${IMAGE_TAG:-local}
+    pull_policy: build  # built from this repository; never pulled from a registry
     <<: *hardening
     restart: "no"
     command: ["alembic", "upgrade", "head"]
@@ -101,7 +105,12 @@ services:
       postgres: { condition: service_healthy }
 
   worker:
+    build:
+      context: .
+      target: service
+      args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
     image: captions-service:${IMAGE_TAG:-local}
+    pull_policy: build  # built from this repository; never pulled from a registry
     <<: *hardening
     command: ["python", "-m", "captions.worker"]
     environment:
@@ -131,7 +140,12 @@ services:
         limits: { cpus: "1.0", memory: 512M }
 
   ingest:
+    build:
+      context: .
+      target: service
+      args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
     image: captions-service:${IMAGE_TAG:-local}
+    pull_policy: build  # built from this repository; never pulled from a registry
     <<: *hardening
     command:
       - uvicorn
@@ -175,6 +189,7 @@ services:
       target: localaudio
       args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
     image: captions-localaudio:${IMAGE_TAG:-local}
+    pull_policy: build  # built from this repository; never pulled from a registry
     profiles: ["local-audio"]
     <<: *hardening
     environment:
@@ -197,6 +212,7 @@ services:
       target: public
       args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
     image: captions-public:${IMAGE_TAG:-local}
+    pull_policy: build  # built from this repository; never pulled from a registry
     <<: *hardening
     environment:
       <<: *app-env
@@ -231,6 +247,7 @@ services:
       target: admin
       args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
     image: captions-admin:${IMAGE_TAG:-local}
+    pull_policy: build  # built from this repository; never pulled from a registry
     <<: *hardening
     environment:
       <<: *app-env

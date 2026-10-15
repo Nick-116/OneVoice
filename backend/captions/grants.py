@@ -1,7 +1,9 @@
 """Least-privilege grants for the worker and ingest database roles.
 
-Reflects the latest schema. Applied by the newest migration that changes
-permissions, and re-applied after a restore:
+Reflects the LATEST schema. Only the newest migration may execute GRANTS_SQL;
+when a new migration starts using it, freeze the previous one's grants inline
+(a fresh install runs every migration in order, so older ones must not refer
+to columns that only exist later). Re-applied after a restore with:
     docker compose run --rm migrate python -m captions.grants
 """
 
