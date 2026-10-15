@@ -1,5 +1,7 @@
 # OneVoice: Church Live Captions & Translation
 
+[![CI](https://github.com/Nick-116/OneVoice/actions/workflows/ci.yml/badge.svg)](https://github.com/Nick-116/OneVoice/actions/workflows/ci.yml)
+
 A self-hosted platform for live captioning and translating church services across multiple campuses.
 
 Congregation members:
