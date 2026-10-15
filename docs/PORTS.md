@@ -16,7 +16,7 @@ With `192.168.1.20` as the server’s address on your network:
 |---|---|
 | Caption page (what the QR codes open) | `http://192.168.1.20:8080/campus/<campus>` |
 | Dashboard | `http://192.168.1.20:8081` |
-| Sender app server address | `ws://192.168.1.20:8082/ingest/v1/stream` |
+| Sender app server address | `192.168.1.20` (the app fills in `ws://192.168.1.20:8082/ingest/v1/stream`) |
 
 Give the server a fixed address in your router, so the QR codes keep working.
 

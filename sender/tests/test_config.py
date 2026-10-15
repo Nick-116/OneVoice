@@ -7,7 +7,7 @@ from keyring.backend import KeyringBackend
 from keyring.errors import PasswordDeleteError
 
 from church_sender import autostart, config
-from church_sender.client import build_stream_url, validate_server_url
+from church_sender.client import build_stream_url, normalize_server_url, validate_server_url
 
 
 class MemoryKeyring(KeyringBackend):
@@ -89,7 +89,7 @@ def test_url_validation_and_query():
     for lan in ("ws://192.168.1.20:8082/ingest/v1/stream", "ws://10.0.0.5/x", "ws://captions.local/x", "ws://onevoice-server/x"):
         assert "local network" in validate_server_url(lan)
     assert validate_server_url("ws://localhost/x")
-    for bad in ("ws://audio.example.com/ingest", "https://audio.example.com", "", "audio.example.com"):
+    for bad in ("ws://audio.example.com/ingest", "ftp://audio.example.com", ""):
         with pytest.raises(ValueError):
             validate_server_url(bad)
     url = build_stream_url("wss://a.example.com/ingest/v1/stream?x=1&sample_rate=8000", 16000)
@@ -118,3 +118,22 @@ def test_log_redaction():
 
     assert TOKEN not in redact(f"header Authorization: Bearer {TOKEN}")
     assert "s3cret" not in redact(f"token={TOKEN}")
+
+
+@pytest.mark.parametrize(
+    "typed, url",
+    [
+        ("192.168.1.20", "ws://192.168.1.20:8082/ingest/v1/stream"),
+        ("192.168.1.20:9000", "ws://192.168.1.20:9000/ingest/v1/stream"),
+        ("onevoice.local", "ws://onevoice.local:8082/ingest/v1/stream"),
+        ("onevoice-server", "ws://onevoice-server:8082/ingest/v1/stream"),
+        ("captions.example.org", "wss://captions.example.org/ingest/v1/stream"),
+        ("https://captions.example.org/", "wss://captions.example.org/ingest/v1/stream"),
+        ("http://192.168.1.20:8082", "ws://192.168.1.20:8082/ingest/v1/stream"),
+        ("wss://a.example.com/custom/path", "wss://a.example.com/custom/path"),
+        ("  ws://10.0.0.5/x  ", "ws://10.0.0.5/x"),
+    ],
+)
+def test_short_server_addresses_are_completed(typed, url):
+    assert normalize_server_url(typed) == url
+    assert build_stream_url(typed, 16000).startswith(url + "?sample_rate=16000")

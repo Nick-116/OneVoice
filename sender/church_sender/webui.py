@@ -42,7 +42,7 @@ class JsApi:
     def poll(self) -> dict:
         return self._c.poll()
 
-    def url_warning(self, url: str) -> str | None:
+    def url_warning(self, url: str) -> dict | None:
         return self._c.url_warning(url)
 
     def save_settings(self, data: dict) -> dict:

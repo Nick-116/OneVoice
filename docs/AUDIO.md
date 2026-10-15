@@ -26,7 +26,7 @@ Only one source is used per campus. A campus set to *local* refuses Sender conne
    - pick the **channel** that carries the speech mix.
 5. **Audio** shows the level meter. During a service it shows *Forwarding to STT*.
 
-**Linux only.** Docker on macOS and Windows can't reach audio hardware. On a Mac or Windows server, use the **Sender app on the same computer** instead: set the campus to *Remote sender app* and point the Sender at `ws://localhost:8082/ingest/v1/stream`.
+**Linux only.** Docker on macOS and Windows can't reach audio hardware. On a Mac or Windows server, use the **Sender app on the same computer** instead: set the campus to *Remote sender app* and enter `localhost` as the Sender's server address.
 
 **Trying it without hardware:** set `LOCAL_AUDIO_TEST_TONE=1` in `.env`. A simulated **Test tone** input then appears in the device list.
 

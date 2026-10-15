@@ -43,7 +43,7 @@ def test_blank_token_keeps_the_saved_one(ctl):
 @pytest.mark.parametrize(
     "data, message",
     [
-        ({"server_url": "https://example.org"}, "wss://"),
+        ({"server_url": "ftp://example.org"}, "ip address or hostname"),
         ({"server_url": "ws://audio.example.org/x"}, "local network"),
         ({"device_key": "Core Audio::Built-in Microphone", "channel": 2}, "1 input channel"),
         ({"sample_rate": 44100}, "sample rate"),
@@ -58,8 +58,11 @@ def test_invalid_settings_are_rejected_with_a_readable_message(ctl, data, messag
 
 
 def test_url_warning_for_lan(ctl):
-    assert "local network" in ctl.url_warning("ws://192.168.1.10:8082/ingest/v1/stream")
-    assert ctl.url_warning("wss://audio.example.org/ingest/v1/stream") is None
+    hint = ctl.url_warning("192.168.1.10")
+    assert hint == {"text": "Connects to ws://192.168.1.10:8082/ingest/v1/stream (unencrypted; fine on your local network)", "warn": False}
+    assert ctl.url_warning("captions.example.org") == {"text": "Connects to wss://captions.example.org/ingest/v1/stream", "warn": False}
+    assert ctl.url_warning("ftp://x.example.org")["warn"] is True
+    assert ctl.url_warning("") is None
 
 
 def test_poll_when_idle(ctl):

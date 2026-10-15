@@ -88,11 +88,38 @@ def is_private_network_host(host: str | None) -> bool:
         return "." not in host or host.endswith(LAN_SUFFIXES)
 
 
+DEFAULT_STREAM_PATH = "/ingest/v1/stream"
+DEFAULT_LAN_PORT = 8082
+
+
+def normalize_server_url(text: str) -> str:
+    """Turn what the user typed into a full stream URL.
+
+    "192.168.1.20" / "onevoice.local"  -> ws://<host>:8082/ingest/v1/stream (local network, OneVoice's audio port)
+    "translate.example.org"            -> wss://<host>/ingest/v1/stream     (internet name, HTTPS in front)
+    http(s):// becomes ws(s)://; a full ws(s):// URL is kept as typed.
+    """
+    text = (text or "").strip()
+    if not text:
+        return ""
+    if "://" not in text:
+        host = urlsplit("//" + text).hostname
+        text = ("ws://" if is_private_network_host(host) else "wss://") + text
+    parts = urlsplit(text)
+    scheme = {"http": "ws", "https": "wss"}.get(parts.scheme.lower(), parts.scheme.lower())
+    netloc, path = parts.netloc, parts.path
+    if not path.strip("/"):
+        path = DEFAULT_STREAM_PATH
+        if scheme == "ws" and parts.hostname and parts.port is None:
+            netloc = f"{netloc}:{DEFAULT_LAN_PORT}"
+    return urlunsplit((scheme, netloc, path, parts.query, ""))
+
+
 def validate_server_url(url: str) -> str | None:
     """Raise ValueError if unusable; return a warning for unencrypted ws:// on a local network."""
-    parts = urlsplit((url or "").strip())
+    parts = urlsplit(normalize_server_url(url))
     if parts.scheme not in ("wss", "ws") or not parts.hostname:
-        raise ValueError("Server URL must start with wss:// or ws:// (e.g. wss://audio.example.com/ingest/v1/stream)")
+        raise ValueError("Enter the server's IP address or hostname, e.g. 192.168.1.20 or captions.example.org")
     if parts.scheme == "ws":
         if not is_private_network_host(parts.hostname):
             raise ValueError("Unencrypted ws:// is only allowed on a local network; use wss:// over the internet")
@@ -101,7 +128,7 @@ def validate_server_url(url: str) -> str | None:
 
 
 def build_stream_url(url: str, sample_rate: int) -> str:
-    parts = urlsplit(url.strip())
+    parts = urlsplit(normalize_server_url(url))
     query = [(k, v) for k, v in parse_qsl(parts.query, keep_blank_values=True) if k not in ("sample_rate", "channels", "format")]
     query += [("sample_rate", str(int(sample_rate))), ("channels", "1"), ("format", "s16le")]
     return urlunsplit((parts.scheme, parts.netloc, parts.path or "/", urlencode(query), ""))

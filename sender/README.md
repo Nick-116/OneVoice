@@ -39,7 +39,7 @@ The `sounddevice` wheels for macOS and Windows include PortAudio, so nothing els
 
 1. In the **admin dashboard → Audio senders**, create a sender for the campus and copy the token (`cs_…`). The dashboard shows it only once. If the sender has an IP allowlist, it must include the church's public IP.
 2. Start the app and fill in the following:
-   * **Server URL**: `wss://audio.example.com/ingest/v1/stream`
+   * **Server address**: the server's IP address or hostname, such as `192.168.1.20` or `captions.example.org`. An IP or local name connects to port 8082 on your network (`ws://…:8082/ingest/v1/stream`); an internet hostname connects over HTTPS (`wss://…/ingest/v1/stream`). A full `ws://` or `wss://` URL also works. The line under the field shows the exact address the app will use.
    * **Sender token**: paste the token. The app stores it in the macOS Keychain or the Windows Credential Manager, never in the config file.
    * **Extra headers** (optional): headers the reverse proxy may require, such as an access-token header. Their values also go into the keychain.
    * **Input device** and **Input channel**: see section 3.

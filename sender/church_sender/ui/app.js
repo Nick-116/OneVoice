@@ -40,6 +40,84 @@ async function call(method, ...args) {
   }
 }
 
+// ---------------------------------------------------------------- dropdowns
+// Native <select> popups don't open reliably in the translucent macOS webview, so each
+// <select> stays as the hidden data model and gets an HTML dropdown on top.
+function enhanceSelect(sel) {
+  const wrap = document.createElement("div");
+  wrap.className = "dropdown";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "dropdown-btn";
+  btn.setAttribute("aria-haspopup", "listbox");
+  btn.setAttribute("aria-expanded", "false");
+  if (sel.getAttribute("aria-labelledby")) btn.setAttribute("aria-labelledby", sel.getAttribute("aria-labelledby"));
+  const list = document.createElement("ul");
+  list.className = "dropdown-list";
+  list.setAttribute("role", "listbox");
+  list.hidden = true;
+  sel.hidden = true;
+  sel.after(wrap);
+  wrap.append(btn, list);
+
+  const label = () => {
+    const o = sel.options[sel.selectedIndex];
+    btn.textContent = o ? o.text : "";
+    btn.disabled = sel.disabled || sel.options.length === 0;
+  };
+  const close = () => {
+    list.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  };
+  const choose = (value) => {
+    if (sel.value !== value) {
+      sel.value = value;
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    label();
+    close();
+    btn.focus();
+  };
+  const open = () => {
+    list.replaceChildren();
+    for (const o of sel.options) {
+      const li = document.createElement("li");
+      li.setAttribute("role", "option");
+      li.tabIndex = -1;
+      li.textContent = o.text;
+      li.dataset.value = o.value;
+      li.setAttribute("aria-selected", String(o.value === sel.value));
+      if (!o.value) li.classList.add("placeholder");
+      li.addEventListener("click", () => choose(o.value));
+      list.append(li);
+    }
+    list.hidden = false;
+    btn.setAttribute("aria-expanded", "true");
+    (list.querySelector('[aria-selected="true"]') || list.firstElementChild)?.focus();
+  };
+  btn.addEventListener("click", () => (list.hidden ? open() : close()));
+  btn.addEventListener("keydown", (e) => {
+    if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
+      e.preventDefault();
+      open();
+    }
+  });
+  list.addEventListener("keydown", (e) => {
+    const items = [...list.children];
+    const i = items.indexOf(document.activeElement);
+    if (e.key === "ArrowDown") items[Math.min(i + 1, items.length - 1)]?.focus();
+    else if (e.key === "ArrowUp") items[Math.max(i - 1, 0)]?.focus();
+    else if (e.key === "Enter" || e.key === " ") { if (i >= 0) choose(items[i].dataset.value); }
+    else if (e.key === "Escape" || e.key === "Tab") { close(); if (e.key === "Escape") btn.focus(); return; }
+    else return;
+    e.preventDefault();
+  });
+  document.addEventListener("pointerdown", (e) => { if (!wrap.contains(e.target)) close(); });
+  new MutationObserver(label).observe(sel, { childList: true });
+  sel.refreshLabel = label;
+  label();
+}
+
 // ---------------------------------------------------------------- settings form
 function fillDevices(devices, selectedKey) {
   const sel = $("device");
@@ -51,6 +129,7 @@ function fillDevices(devices, selectedKey) {
     sel.add(opt);
   }
   sel.value = devices.some((d) => d.key === selectedKey) ? selectedKey : "";
+  sel.refreshLabel?.();
   fillChannels();
 }
 
@@ -62,6 +141,7 @@ function fillChannels(selected) {
   const n = dev ? dev.channels : 1;
   for (let i = 1; i <= n; i++) sel.add(new Option(`Channel ${i}`, String(i)));
   sel.value = String(Math.min(Math.max(1, current), n));
+  sel.refreshLabel?.();
 }
 
 function setRate(rate) {
@@ -102,9 +182,10 @@ function setTokenBadge(has) {
 
 async function updateUrlWarning() {
   const url = $("serverUrl").value.trim();
-  const warn = url ? await api.url_warning(url) : null;
-  $("urlWarn").hidden = !warn;
-  $("urlWarn").textContent = warn || "";
+  const hint = url ? await api.url_warning(url) : null;
+  $("urlWarn").hidden = !hint;
+  $("urlWarn").textContent = hint ? hint.text : "";
+  $("urlWarn").classList.toggle("warn", !!(hint && hint.warn));
 }
 
 function settingsPayload() {
@@ -217,6 +298,8 @@ async function pollLoop() {
 // ---------------------------------------------------------------- wiring
 async function init() {
   state = await api.initial_state();
+  enhanceSelect($("device"));
+  enhanceSelect($("channel"));
   document.body.classList.toggle("vibrant", !!state.vibrant);
   $("version").textContent = `Version ${state.app.version} · live audio for captions`;
   const c = state.config;
@@ -285,12 +368,12 @@ function demoApi() {
   let live = true;
   return {
     initial_state: async () => ({
-      app: { name: "OneVoice Sender", version: "1.3.0" },
+      app: { name: "OneVoice Sender", version: "1.3.1" },
       devices: [
         { key: "Core Audio::Dante Virtual Soundcard", name: "Dante Virtual Soundcard", hostapi: "Core Audio", channels: 16, rate: 48000 },
         { key: "Core Audio::MacBook Pro Microphone", name: "MacBook Pro Microphone", hostapi: "Core Audio", channels: 1, rate: 48000 },
       ],
-      config: { server_url: "wss://audio.example.org/ingest/v1/stream", device_key: "Core Audio::Dante Virtual Soundcard", channel: 3, sample_rate: 16000, gain_db: 2, auto_start_stream: true, launch_at_login: true, header_names: [] },
+      config: { server_url: "captions.example.org", device_key: "Core Audio::Dante Virtual Soundcard", channel: 3, sample_rate: 16000, gain_db: 2, auto_start_stream: true, launch_at_login: true, header_names: [] },
       has_token: true,
       autostart_supported: true,
       should_autostart: false,

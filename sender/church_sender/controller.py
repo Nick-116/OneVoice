@@ -15,7 +15,7 @@ from dataclasses import asdict
 
 from . import APP_NAME, __version__, autostart
 from .audio import AudioCapture, InputDevice, list_input_devices
-from .client import LinkState, SenderClient, validate_server_url
+from .client import LinkState, SenderClient, normalize_server_url, validate_server_url
 from .config import Config, get_extra_headers, get_token, save_config, set_extra_headers, set_token, validate_header
 from .logsetup import add_handler
 from .runner import ClientThread, build_client_settings
@@ -267,8 +267,15 @@ class SenderController:
             self._close_capture()
 
     @staticmethod
-    def url_warning(url: str) -> str | None:
+    def url_warning(url: str) -> dict | None:
+        """Hint under the address field: where the app will connect, or what is wrong."""
+        if not (url or "").strip():
+            return None
         try:
-            return validate_server_url(url)
+            warning = validate_server_url(url)
         except ValueError as e:
-            return str(e)
+            return {"text": str(e), "warn": True}
+        text = f"Connects to {normalize_server_url(url)}"
+        if warning:
+            text += " (unencrypted; fine on your local network)"
+        return {"text": text, "warn": False}
