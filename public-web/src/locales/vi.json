@@ -1,0 +1,54 @@
+{
+  "app": { "title": "Phụ đề trực tiếp" },
+  "common": { "loading": "Đang tải…" },
+  "welcome": {
+    "title": "Chào mừng quý vị",
+    "prompt": "Vui lòng chọn ngôn ngữ ưa thích để theo dõi buổi thờ phượng hôm nay.",
+    "languageListLabel": "Ngôn ngữ",
+    "continue": "Tiếp tục"
+  },
+  "header": {
+    "changeLanguage": "Đổi ngôn ngữ",
+    "currentLanguage": "Ngôn ngữ: {{language}}"
+  },
+  "status": {
+    "live": "Trực tiếp",
+    "connecting": "Đang kết nối…",
+    "waiting": "Đang chờ",
+    "offline": "Ngoại tuyến",
+    "notLive": "Không phát trực tiếp"
+  },
+  "captions": {
+    "waiting": "Đang chờ phụ đề trực tiếp…",
+    "disconnected": "Dịch vụ phát trực tuyến hiện chưa được kết nối. Vui lòng liên hệ ban kỹ thuật.",
+    "unavailable": "Phụ đề trực tiếp tạm thời không khả dụng. Chúng tôi đang khắc phục.",
+    "translationUnavailable": "Bản dịch tạm thời không khả dụng. Phụ đề sẽ hiển thị ngay khi bản dịch hoạt động trở lại.",
+    "jumpToLive": "Đến phụ đề mới nhất",
+    "regionLabel": "Phụ đề trực tiếp",
+    "empty": "Phụ đề sẽ hiển thị tại đây."
+  },
+  "schedule": {
+    "startsInMinutes_one": "Buổi thờ phượng sẽ bắt đầu sau {{count}} phút",
+    "startsInMinutes_other": "Buổi thờ phượng sẽ bắt đầu sau {{count}} phút",
+    "aboutToBegin": "Buổi thờ phượng sắp bắt đầu",
+    "nextService": "Buổi thờ phượng tiếp theo",
+    "nextServiceAt": "Buổi thờ phượng tiếp theo: {{when}}",
+    "countdownLabel": "Thời gian còn lại đến khi buổi thờ phượng bắt đầu",
+    "ended": "Buổi thờ phượng hôm nay đã kết thúc. Cảm ơn quý vị đã tham dự.",
+    "idle": "Hiện không có buổi thờ phượng nào được lên lịch."
+  },
+  "errors": {
+    "retrying": "Phụ đề tạm thời không khả dụng. Đang thử lại…",
+    "notFound": "Không tìm thấy cơ sở này.",
+    "notFoundHint": "Vui lòng kiểm tra đường liên kết hoặc mã QR rồi thử lại.",
+    "noCampuses": "Hiện chưa có phụ đề.",
+    "backToStart": "Xem tất cả cơ sở"
+  },
+  "campus": { "chooseTitle": "Chọn cơ sở của quý vị" },
+  "textSize": {
+    "label": "Cỡ chữ",
+    "decrease": "Giảm cỡ chữ",
+    "increase": "Tăng cỡ chữ",
+    "current": "Cỡ chữ {{step}}/{{total}}"
+  }
+}

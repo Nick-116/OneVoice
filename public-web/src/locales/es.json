@@ -1,0 +1,55 @@
+{
+  "app": { "title": "Subtítulos en vivo" },
+  "common": { "loading": "Cargando…" },
+  "welcome": {
+    "title": "Bienvenidos",
+    "prompt": "Selecciona tu idioma preferido para seguir el servicio de hoy.",
+    "languageListLabel": "Idioma",
+    "continue": "Continuar"
+  },
+  "header": {
+    "changeLanguage": "Cambiar idioma",
+    "currentLanguage": "Idioma: {{language}}"
+  },
+  "status": {
+    "live": "En vivo",
+    "connecting": "Conectando…",
+    "waiting": "En espera",
+    "offline": "Sin conexión",
+    "notLive": "No está en vivo"
+  },
+  "captions": {
+    "waiting": "Esperando los subtítulos en vivo…",
+    "disconnected": "El servicio de transmisión no está conectado en este momento. Por favor, consulta con el equipo de producción.",
+    "unavailable": "Los subtítulos en vivo no están disponibles temporalmente. Estamos trabajando para restablecerlos.",
+    "translationUnavailable": "La traducción no está disponible temporalmente. Mostraremos los subtítulos en cuanto se restablezca.",
+    "jumpToLive": "Volver a lo más reciente",
+    "regionLabel": "Subtítulos en vivo",
+    "empty": "Los subtítulos aparecerán aquí."
+  },
+  "schedule": {
+    "startsInMinutes_one": "El servicio comienza en {{count}} minuto",
+    "startsInMinutes_many": "El servicio comienza en {{count}} minutos",
+    "startsInMinutes_other": "El servicio comienza en {{count}} minutos",
+    "aboutToBegin": "El servicio está por comenzar",
+    "nextService": "Próximo servicio",
+    "nextServiceAt": "Próximo servicio: {{when}}",
+    "countdownLabel": "Tiempo restante para el inicio del servicio",
+    "ended": "El servicio de hoy ha terminado. Gracias por acompañarnos.",
+    "idle": "No hay ningún servicio programado en este momento."
+  },
+  "errors": {
+    "retrying": "Los subtítulos no están disponibles temporalmente. Reintentando…",
+    "notFound": "No encontramos ese campus.",
+    "notFoundHint": "Revisa el enlace o el código QR e inténtalo de nuevo.",
+    "noCampuses": "Los subtítulos no están disponibles en este momento.",
+    "backToStart": "Ver todos los campus"
+  },
+  "campus": { "chooseTitle": "Elige tu campus" },
+  "textSize": {
+    "label": "Tamaño del texto",
+    "decrease": "Reducir el tamaño del texto",
+    "increase": "Aumentar el tamaño del texto",
+    "current": "Tamaño del texto {{step}} de {{total}}"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "app": { "title": "Soutit an dirèk" },
+  "common": { "loading": "N ap chaje…" },
+  "welcome": {
+    "title": "Byenveni",
+    "prompt": "Chwazi lang ou prefere a pou w ka swiv sèvis jodi a.",
+    "languageListLabel": "Lang",
+    "continue": "Kontinye"
+  },
+  "header": {
+    "changeLanguage": "Chanje lang",
+    "currentLanguage": "Lang: {{language}}"
+  },
+  "status": {
+    "live": "An dirèk",
+    "connecting": "N ap konekte…",
+    "waiting": "N ap tann",
+    "offline": "Pa gen koneksyon",
+    "notLive": "Pa an dirèk"
+  },
+  "captions": {
+    "waiting": "N ap tann soutit an dirèk yo…",
+    "disconnected": "Sèvis difizyon an pa konekte kounye a. Tanpri, pale ak ekip pwodiksyon an.",
+    "unavailable": "Soutit an dirèk yo pa disponib pou kounye a. N ap travay pou n remete yo.",
+    "translationUnavailable": "Tradiksyon an pa disponib pou kounye a. N ap montre soutit yo depi li tounen.",
+    "jumpToLive": "Retounen nan dirèk la",
+    "regionLabel": "Soutit an dirèk",
+    "empty": "Soutit yo ap parèt isit la."
+  },
+  "schedule": {
+    "startsInMinutes_one": "Sèvis la ap kòmanse nan {{count}} minit",
+    "startsInMinutes_other": "Sèvis la ap kòmanse nan {{count}} minit",
+    "aboutToBegin": "Sèvis la pral kòmanse talè",
+    "nextService": "Pwochen sèvis",
+    "nextServiceAt": "Pwochen sèvis: {{when}}",
+    "countdownLabel": "Tan ki rete anvan sèvis la kòmanse",
+    "ended": "Sèvis jodi a fini. Mèsi paske ou te patisipe avèk nou.",
+    "idle": "Pa gen okenn sèvis ki pwograme kounye a."
+  },
+  "errors": {
+    "retrying": "Soutit yo pa disponib pou kounye a. N ap eseye ankò…",
+    "notFound": "Nou pa jwenn kanpis sa a.",
+    "notFoundHint": "Tanpri verifye lyen an oswa kòd QR la epi eseye ankò.",
+    "noCampuses": "Soutit yo pa disponib kounye a.",
+    "backToStart": "Wè tout kanpis yo"
+  },
+  "campus": { "chooseTitle": "Chwazi kanpis ou" },
+  "textSize": {
+    "label": "Gwosè tèks la",
+    "decrease": "Fè tèks la pi piti",
+    "increase": "Fè tèks la pi gwo",
+    "current": "Gwosè tèks {{step}} sou {{total}}"
+  }
+}

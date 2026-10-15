@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Default accent (blue); replaced at runtime by the color chosen in the admin dashboard. */
+  :root {
+    --brand-50: 238 243 253;
+    --brand-100: 216 227 251;
+    --brand-500: 37 99 235;
+    --brand-600: 37 99 235;
+    --brand-700: 37 99 235;
+    --brand-800: 30 80 190;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-white font-sans text-gray-900 antialiased;
+    overflow-wrap: anywhere;
+  }
+
+  :lang(ko) {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

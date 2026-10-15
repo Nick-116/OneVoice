@@ -1,0 +1,54 @@
+{
+  "app": { "title": "실시간 자막" },
+  "common": { "loading": "불러오는 중…" },
+  "welcome": {
+    "title": "환영합니다",
+    "prompt": "오늘 예배를 함께 따라가실 수 있도록 원하시는 언어를 선택해 주세요.",
+    "languageListLabel": "언어",
+    "continue": "계속"
+  },
+  "header": {
+    "changeLanguage": "언어 변경",
+    "currentLanguage": "언어: {{language}}"
+  },
+  "status": {
+    "live": "실시간",
+    "connecting": "연결 중…",
+    "waiting": "대기 중",
+    "offline": "오프라인",
+    "notLive": "방송 중 아님"
+  },
+  "captions": {
+    "waiting": "실시간 자막을 기다리는 중입니다…",
+    "disconnected": "현재 스트리밍 서비스가 연결되어 있지 않습니다. 방송팀에 확인해 주세요.",
+    "unavailable": "실시간 자막을 일시적으로 사용할 수 없습니다. 복구를 위해 노력하고 있습니다.",
+    "translationUnavailable": "번역을 일시적으로 사용할 수 없습니다. 번역이 복구되는 대로 자막을 표시합니다.",
+    "jumpToLive": "최신 자막으로 이동",
+    "regionLabel": "실시간 자막",
+    "empty": "자막이 여기에 표시됩니다."
+  },
+  "schedule": {
+    "startsInMinutes_one": "{{count}}분 후에 예배가 시작됩니다",
+    "startsInMinutes_other": "{{count}}분 후에 예배가 시작됩니다",
+    "aboutToBegin": "곧 예배가 시작됩니다",
+    "nextService": "다음 예배",
+    "nextServiceAt": "다음 예배: {{when}}",
+    "countdownLabel": "예배 시작까지 남은 시간",
+    "ended": "오늘 예배가 끝났습니다. 함께해 주셔서 감사합니다.",
+    "idle": "현재 예정된 예배가 없습니다."
+  },
+  "errors": {
+    "retrying": "자막을 일시적으로 사용할 수 없습니다. 다시 시도하는 중…",
+    "notFound": "해당 캠퍼스를 찾을 수 없습니다.",
+    "notFoundHint": "링크 또는 QR 코드를 확인한 후 다시 시도해 주세요.",
+    "noCampuses": "현재 자막을 제공할 수 없습니다.",
+    "backToStart": "모든 캠퍼스 보기"
+  },
+  "campus": { "chooseTitle": "캠퍼스를 선택해 주세요" },
+  "textSize": {
+    "label": "글자 크기",
+    "decrease": "글자 작게",
+    "increase": "글자 크게",
+    "current": "글자 크기 {{step}}/{{total}}"
+  }
+}

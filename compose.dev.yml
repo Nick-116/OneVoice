@@ -1,0 +1,16 @@
+# LOCAL DEVELOPMENT ONLY - never use on the VPS.
+# Publishes the three HTTP services on 127.0.0.1 so you can test without Pangolin.
+#   docker compose -f compose.yml -f compose.dev.yml up -d --build postgres redis migrate worker ingest public admin
+services:
+  public:
+    ports: ["127.0.0.1:${DEV_PUBLIC_PORT:-18080}:8080"]
+    networks: [public_edge, redis_net, dev_host]
+  admin:
+    ports: ["127.0.0.1:${DEV_ADMIN_PORT:-18081}:8081"]
+  ingest:
+    ports: ["127.0.0.1:${DEV_INGEST_PORT:-18082}:8082"]
+    networks: [ingest_edge, db_net, redis_net, dev_host]
+
+networks:
+  # The edge networks are internal (no host access); dev needs a normal bridge to publish ports.
+  dev_host: {}

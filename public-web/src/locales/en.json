@@ -1,0 +1,54 @@
+{
+  "app": { "title": "Live Captions" },
+  "common": { "loading": "Loading…" },
+  "welcome": {
+    "title": "Welcome",
+    "prompt": "Select your preferred language to follow along with today's service.",
+    "languageListLabel": "Language",
+    "continue": "Continue"
+  },
+  "header": {
+    "changeLanguage": "Change language",
+    "currentLanguage": "Language: {{language}}"
+  },
+  "status": {
+    "live": "Live",
+    "connecting": "Connecting…",
+    "waiting": "Waiting",
+    "offline": "Offline",
+    "notLive": "Not live"
+  },
+  "captions": {
+    "waiting": "Waiting for live captions…",
+    "disconnected": "The streaming service is currently not connected. Please check with the production team.",
+    "unavailable": "Live captions are temporarily unavailable. We're working to restore them.",
+    "translationUnavailable": "Translation is temporarily unavailable. Showing captions as soon as it returns.",
+    "jumpToLive": "Jump to live",
+    "regionLabel": "Live captions",
+    "empty": "Captions will appear here."
+  },
+  "schedule": {
+    "startsInMinutes_one": "Service starts in {{count}} minute",
+    "startsInMinutes_other": "Service starts in {{count}} minutes",
+    "aboutToBegin": "The service is about to begin",
+    "nextService": "Next service",
+    "nextServiceAt": "Next service: {{when}}",
+    "countdownLabel": "Time until the service starts",
+    "ended": "Today's service has ended. Thank you for joining us.",
+    "idle": "There is no service scheduled right now."
+  },
+  "errors": {
+    "retrying": "Captions are temporarily unavailable. Retrying…",
+    "notFound": "We couldn't find that campus.",
+    "notFoundHint": "Please check the link or QR code and try again.",
+    "noCampuses": "Captions are not available right now.",
+    "backToStart": "See all campuses"
+  },
+  "campus": { "chooseTitle": "Choose your campus" },
+  "textSize": {
+    "label": "Text size",
+    "decrease": "Decrease text size",
+    "increase": "Increase text size",
+    "current": "Text size {{step}} of {{total}}"
+  }
+}

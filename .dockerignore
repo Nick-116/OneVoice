@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/.venv
+.git
+secrets
+backups
+sender
+loadtest
+docs
+*.md
+!VERSION
+.env

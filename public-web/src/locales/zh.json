@@ -1,0 +1,54 @@
+{
+  "app": { "title": "实时字幕" },
+  "common": { "loading": "正在加载…" },
+  "welcome": {
+    "title": "欢迎",
+    "prompt": "请选择您希望使用的语言，以便跟上今天的礼拜。",
+    "languageListLabel": "语言",
+    "continue": "继续"
+  },
+  "header": {
+    "changeLanguage": "更改语言",
+    "currentLanguage": "语言：{{language}}"
+  },
+  "status": {
+    "live": "直播中",
+    "connecting": "正在连接…",
+    "waiting": "等待中",
+    "offline": "离线",
+    "notLive": "未直播"
+  },
+  "captions": {
+    "waiting": "正在等待实时字幕…",
+    "disconnected": "直播服务目前未连接。请与制作团队确认。",
+    "unavailable": "实时字幕暂时无法使用。我们正在努力恢复。",
+    "translationUnavailable": "翻译暂时无法使用。恢复后将立即显示字幕。",
+    "jumpToLive": "回到最新",
+    "regionLabel": "实时字幕",
+    "empty": "字幕将显示在这里。"
+  },
+  "schedule": {
+    "startsInMinutes_one": "礼拜将在 {{count}} 分钟后开始",
+    "startsInMinutes_other": "礼拜将在 {{count}} 分钟后开始",
+    "aboutToBegin": "礼拜即将开始",
+    "nextService": "下一场礼拜",
+    "nextServiceAt": "下一场礼拜：{{when}}",
+    "countdownLabel": "距离礼拜开始的时间",
+    "ended": "今天的礼拜已经结束。感谢您的参与。",
+    "idle": "目前没有安排礼拜。"
+  },
+  "errors": {
+    "retrying": "字幕暂时无法使用。正在重试…",
+    "notFound": "找不到该堂点。",
+    "notFoundHint": "请检查链接或二维码后重试。",
+    "noCampuses": "目前无法提供字幕。",
+    "backToStart": "查看所有堂点"
+  },
+  "campus": { "chooseTitle": "请选择您的堂点" },
+  "textSize": {
+    "label": "文字大小",
+    "decrease": "缩小文字",
+    "increase": "放大文字",
+    "current": "文字大小：第 {{step}} 级，共 {{total}} 级"
+  }
+}

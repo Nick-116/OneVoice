@@ -1,0 +1,280 @@
+# Church live captions - production deployment.
+#
+# Nothing here publishes a port on the host. The only way in is through your
+# Pangolin server via the `newt` tunnel container, which can reach exactly
+# three targets:   public:8080   admin:8081   ingest:8082
+#
+# Networks (all "internal" except egress = no route to the internet):
+#   public_edge  newt <-> public           admin_edge  newt <-> admin
+#   ingest_edge  newt <-> ingest           redis_net   app services <-> redis
+#   db_net       admin/worker/ingest/migrate <-> postgres
+#   egress       worker (STT/translation APIs), admin (translation test), newt (Pangolin)
+# The public container can reach only Redis (restricted ACL user). It has no
+# database credentials, no route to admin, and no internet access.
+
+name: captions
+
+x-hardening: &hardening
+  read_only: true
+  tmpfs:
+    - /tmp:size=16m,mode=1777
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: "20m", max-file: "5" }
+
+x-app-env: &app-env
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  DB_HOST: postgres
+  DB_NAME: captions
+  REDIS_HOST: redis
+  PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?set PUBLIC_BASE_URL in .env}
+  ADMIN_ORIGIN: ${ADMIN_ORIGIN:?set ADMIN_ORIGIN in .env}
+  TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-1}
+  COOKIE_SECURE: ${COOKIE_SECURE:-true}
+
+services:
+  postgres:
+    image: postgres:16.6-alpine
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      POSTGRES_DB: captions
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_superuser_password
+    secrets: [db_superuser_password, db_admin_password, db_worker_password, db_ingest_password]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/postgres/init-roles.sh:/docker-entrypoint-initdb.d/10-init-roles.sh:ro
+    networks: [db_net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d captions"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    shm_size: 128m
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 512M }
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+  redis:
+    image: redis:7.4.2-alpine
+    <<: *hardening
+    user: "999:1000"
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    secrets: [redis_worker_password, redis_admin_password, redis_ingest_password, redis_public_password]
+    volumes:
+      - ./deploy/redis/entrypoint.sh:/entrypoint.sh:ro
+    networks: [redis_net]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping 2>&1 | grep -qE 'PONG|NOAUTH'"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 320M }
+
+  migrate:
+    build:
+      context: .
+      target: service
+      args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
+    image: captions-service:${IMAGE_TAG:-local}
+    <<: *hardening
+    restart: "no"
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      <<: *app-env
+      COMPONENT: migrate
+      DB_USER: captions_admin
+      DB_PASSWORD_FILE: /run/secrets/db_admin_password
+      APP_SECRET_KEY_FILE: /run/secrets/app_secret_key
+    secrets: [db_admin_password, app_secret_key]
+    networks: [db_net]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  worker:
+    image: captions-service:${IMAGE_TAG:-local}
+    <<: *hardening
+    command: ["python", "-m", "captions.worker"]
+    environment:
+      <<: *app-env
+      COMPONENT: worker
+      DB_USER: captions_worker
+      DB_PASSWORD_FILE: /run/secrets/db_worker_password
+      REDIS_USER: worker
+      REDIS_PASSWORD_FILE: /run/secrets/redis_worker_password
+      APP_SECRET_KEY_FILE: /run/secrets/app_secret_key
+      # Optional: provider keys can also be entered in the admin dashboard (stored encrypted).
+      DEEPGRAM_API_KEY_FILE: /run/secrets/deepgram_api_key
+      AZURE_TRANSLATOR_KEY_FILE: /run/secrets/azure_translator_key
+    secrets: [db_worker_password, redis_worker_password, app_secret_key, deepgram_api_key, azure_translator_key]
+    networks: [db_net, redis_net, egress]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-m", "captions.healthcheck", "worker"]
+      interval: 15s
+      timeout: 8s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 512M }
+
+  ingest:
+    image: captions-service:${IMAGE_TAG:-local}
+    <<: *hardening
+    command:
+      - uvicorn
+      - captions.ingest.app:app
+      - --host=0.0.0.0
+      - --port=8082
+      - --no-server-header
+      - --ws-max-size=65536
+      - --ws-ping-interval=10
+      - --ws-ping-timeout=10
+      - --timeout-graceful-shutdown=3
+    environment:
+      <<: *app-env
+      COMPONENT: ingest
+      DB_USER: captions_ingest
+      DB_PASSWORD_FILE: /run/secrets/db_ingest_password
+      REDIS_USER: ingest
+      REDIS_PASSWORD_FILE: /run/secrets/redis_ingest_password
+    secrets: [db_ingest_password, redis_ingest_password]
+    networks: [ingest_edge, db_net, redis_net]
+    expose: ["8082"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-m", "captions.healthcheck", "http", "8082"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 256M }
+
+  public:
+    build:
+      context: .
+      target: public
+      args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
+    image: captions-public:${IMAGE_TAG:-local}
+    <<: *hardening
+    environment:
+      <<: *app-env
+      COMPONENT: public
+      # Set PUBLIC_TRUSTED_PROXY_HOPS=2 if captions.<domain> is orange-clouded in Cloudflare.
+      TRUSTED_PROXY_HOPS: ${PUBLIC_TRUSTED_PROXY_HOPS:-1}
+      REDIS_USER: public
+      REDIS_PASSWORD_FILE: /run/secrets/redis_public_password
+      PUBLIC_MAX_STREAMS: ${PUBLIC_MAX_STREAMS:-3000}
+      PUBLIC_MAX_STREAMS_PER_IP: ${PUBLIC_MAX_STREAMS_PER_IP:-400}
+    secrets: [redis_public_password]
+    volumes:
+      - ./branding:/app/branding:ro
+    networks: [public_edge, redis_net]
+    expose: ["8080"]
+    depends_on:
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-m", "captions.healthcheck", "http", "8080"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    ulimits:
+      nofile: { soft: 16384, hard: 16384 }
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 384M }
+
+  admin:
+    build:
+      context: .
+      target: admin
+      args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
+    image: captions-admin:${IMAGE_TAG:-local}
+    <<: *hardening
+    environment:
+      <<: *app-env
+      COMPONENT: admin
+      DB_USER: captions_admin
+      DB_PASSWORD_FILE: /run/secrets/db_admin_password
+      REDIS_USER: admin
+      REDIS_PASSWORD_FILE: /run/secrets/redis_admin_password
+      APP_SECRET_KEY_FILE: /run/secrets/app_secret_key
+      ADMIN_REQUIRE_MFA: ${ADMIN_REQUIRE_MFA:-true}
+      DEEPGRAM_API_KEY_FILE: /run/secrets/deepgram_api_key
+      AZURE_TRANSLATOR_KEY_FILE: /run/secrets/azure_translator_key
+    secrets: [db_admin_password, redis_admin_password, app_secret_key, deepgram_api_key, azure_translator_key]
+    volumes:
+      - ./branding:/app/branding:ro
+      # Request/status files shared with the host updater (scripts/updater.py). No Docker access.
+      - ./updater:/app/updater
+    networks: [admin_edge, db_net, redis_net, egress]
+    expose: ["8081"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-m", "captions.healthcheck", "http", "8081"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 384M }
+
+  # Pangolin site connector. Create a "Newt" site in your Pangolin dashboard and
+  # put its endpoint/id/secret in .env. Remove this service if Newt runs elsewhere
+  # (then attach that Newt container to the three *_edge networks instead).
+  newt:
+    image: fosrl/newt:${NEWT_VERSION:-latest}
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      PANGOLIN_ENDPOINT: ${PANGOLIN_ENDPOINT:?set PANGOLIN_ENDPOINT in .env}
+      NEWT_ID: ${NEWT_ID:?set NEWT_ID in .env}
+      NEWT_SECRET: ${NEWT_SECRET:?set NEWT_SECRET in .env}
+    networks: [public_edge, admin_edge, ingest_edge, egress]
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 128M }
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+networks:
+  public_edge: { internal: true }
+  admin_edge: { internal: true }
+  ingest_edge: { internal: true }
+  redis_net: { internal: true }
+  db_net: { internal: true }
+  egress: {}
+
+volumes:
+  pgdata: {}
+
+secrets:
+  app_secret_key: { file: ./secrets/app_secret_key }
+  db_superuser_password: { file: ./secrets/db_superuser_password }
+  db_admin_password: { file: ./secrets/db_admin_password }
+  db_worker_password: { file: ./secrets/db_worker_password }
+  db_ingest_password: { file: ./secrets/db_ingest_password }
+  redis_worker_password: { file: ./secrets/redis_worker_password }
+  redis_admin_password: { file: ./secrets/redis_admin_password }
+  redis_ingest_password: { file: ./secrets/redis_ingest_password }
+  redis_public_password: { file: ./secrets/redis_public_password }
+  deepgram_api_key: { file: ./secrets/deepgram_api_key }
+  azure_translator_key: { file: ./secrets/azure_translator_key }

@@ -1,0 +1,10 @@
+[project]
+name = "church-captions-sender"
+version = "1.0.0"
+description = "Church audio sender: Dante/USB input channel -> WSS ingest for live captions"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]

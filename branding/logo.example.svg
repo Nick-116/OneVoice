@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" role="img" aria-label="Church logo placeholder">
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="#111827"/>
+  <path d="M29 12h6v10h10v6H35v24h-6V28H19v-6h10z" fill="#ffffff"/>
+  <text x="80" y="41" font-family="-apple-system, Segoe UI, Roboto, sans-serif" font-size="24" font-weight="600" fill="#111827">Your Church</text>
+</svg>

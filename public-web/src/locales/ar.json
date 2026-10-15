@@ -1,0 +1,58 @@
+{
+  "app": { "title": "التسميات التوضيحية المباشرة" },
+  "common": { "loading": "جارٍ التحميل…" },
+  "welcome": {
+    "title": "أهلًا وسهلًا بكم",
+    "prompt": "اختر لغتك المفضلة لمتابعة خدمة اليوم.",
+    "languageListLabel": "اللغة",
+    "continue": "متابعة"
+  },
+  "header": {
+    "changeLanguage": "تغيير اللغة",
+    "currentLanguage": "اللغة: {{language}}"
+  },
+  "status": {
+    "live": "مباشر",
+    "connecting": "جارٍ الاتصال…",
+    "waiting": "في الانتظار",
+    "offline": "غير متصل",
+    "notLive": "ليس مباشرًا"
+  },
+  "captions": {
+    "waiting": "في انتظار التسميات التوضيحية المباشرة…",
+    "disconnected": "خدمة البث غير متصلة حاليًا. يُرجى المراجعة مع فريق الإنتاج.",
+    "unavailable": "التسميات التوضيحية المباشرة غير متاحة مؤقتًا. نحن نعمل على استعادتها.",
+    "translationUnavailable": "الترجمة غير متاحة مؤقتًا. ستظهر التسميات التوضيحية فور عودتها.",
+    "jumpToLive": "الانتقال إلى المباشر",
+    "regionLabel": "التسميات التوضيحية المباشرة",
+    "empty": "ستظهر التسميات التوضيحية هنا."
+  },
+  "schedule": {
+    "startsInMinutes_zero": "تبدأ الخدمة الآن",
+    "startsInMinutes_one": "تبدأ الخدمة خلال دقيقة واحدة",
+    "startsInMinutes_two": "تبدأ الخدمة خلال دقيقتين",
+    "startsInMinutes_few": "تبدأ الخدمة خلال {{count}} دقائق",
+    "startsInMinutes_many": "تبدأ الخدمة خلال {{count}} دقيقة",
+    "startsInMinutes_other": "تبدأ الخدمة خلال {{count}} دقيقة",
+    "aboutToBegin": "الخدمة على وشك أن تبدأ",
+    "nextService": "الخدمة القادمة",
+    "nextServiceAt": "الخدمة القادمة: {{when}}",
+    "countdownLabel": "الوقت المتبقي حتى بدء الخدمة",
+    "ended": "انتهت خدمة اليوم. شكرًا لانضمامكم إلينا.",
+    "idle": "لا توجد خدمة مجدولة في الوقت الحالي."
+  },
+  "errors": {
+    "retrying": "التسميات التوضيحية غير متاحة مؤقتًا. جارٍ إعادة المحاولة…",
+    "notFound": "لم نتمكن من العثور على هذا الفرع.",
+    "notFoundHint": "يُرجى التحقق من الرابط أو رمز QR ثم المحاولة مرة أخرى.",
+    "noCampuses": "التسميات التوضيحية غير متاحة الآن.",
+    "backToStart": "عرض جميع الفروع"
+  },
+  "campus": { "chooseTitle": "اختر الفرع" },
+  "textSize": {
+    "label": "حجم النص",
+    "decrease": "تصغير النص",
+    "increase": "تكبير النص",
+    "current": "حجم النص {{step}} من {{total}}"
+  }
+}

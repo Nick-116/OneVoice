@@ -1,0 +1,55 @@
+{
+  "app": { "title": "Legendas ao vivo" },
+  "common": { "loading": "Carregando…" },
+  "welcome": {
+    "title": "Bem-vindos",
+    "prompt": "Selecione o seu idioma preferido para acompanhar o culto de hoje.",
+    "languageListLabel": "Idioma",
+    "continue": "Continuar"
+  },
+  "header": {
+    "changeLanguage": "Mudar idioma",
+    "currentLanguage": "Idioma: {{language}}"
+  },
+  "status": {
+    "live": "Ao vivo",
+    "connecting": "Conectando…",
+    "waiting": "Aguardando",
+    "offline": "Sem conexão",
+    "notLive": "Fora do ar"
+  },
+  "captions": {
+    "waiting": "Aguardando as legendas ao vivo…",
+    "disconnected": "O serviço de transmissão não está conectado no momento. Por favor, verifique com a equipe de produção.",
+    "unavailable": "As legendas ao vivo estão temporariamente indisponíveis. Estamos trabalhando para restabelecê-las.",
+    "translationUnavailable": "A tradução está temporariamente indisponível. As legendas serão exibidas assim que ela voltar.",
+    "jumpToLive": "Ir para o mais recente",
+    "regionLabel": "Legendas ao vivo",
+    "empty": "As legendas aparecerão aqui."
+  },
+  "schedule": {
+    "startsInMinutes_one": "O culto começa em {{count}} minuto",
+    "startsInMinutes_many": "O culto começa em {{count}} minutos",
+    "startsInMinutes_other": "O culto começa em {{count}} minutos",
+    "aboutToBegin": "O culto está prestes a começar",
+    "nextService": "Próximo culto",
+    "nextServiceAt": "Próximo culto: {{when}}",
+    "countdownLabel": "Tempo até o início do culto",
+    "ended": "O culto de hoje terminou. Obrigado por estar conosco.",
+    "idle": "Não há nenhum culto programado no momento."
+  },
+  "errors": {
+    "retrying": "As legendas estão temporariamente indisponíveis. Tentando novamente…",
+    "notFound": "Não encontramos esse campus.",
+    "notFoundHint": "Verifique o link ou o código QR e tente novamente.",
+    "noCampuses": "As legendas não estão disponíveis no momento.",
+    "backToStart": "Ver todos os campus"
+  },
+  "campus": { "chooseTitle": "Escolha o seu campus" },
+  "textSize": {
+    "label": "Tamanho do texto",
+    "decrease": "Diminuir o tamanho do texto",
+    "increase": "Aumentar o tamanho do texto",
+    "current": "Tamanho do texto {{step}} de {{total}}"
+  }
+}

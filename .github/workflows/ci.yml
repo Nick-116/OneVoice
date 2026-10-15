@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan for committed secrets
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.21.2 detect --source /repo --redact --verbose
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Backend tests (PostgreSQL + Redis)
+        run: docker compose -f compose.test.yml run --rm --build tests
+      - name: Clean up
+        if: always()
+        run: docker compose -f compose.test.yml down -v
+
+  frontends:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [public-web, admin-web]
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+  sender:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sender
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt pytest==8.3.3 pytest-asyncio==0.24.0
+      - run: python -m pytest -q
+
+  docker-images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production images
+        run: |
+          ./scripts/generate-secrets.sh
+          cp .env.example .env
+          sed -i 's/^NEWT_ID=.*/NEWT_ID=ci/; s/^NEWT_SECRET=.*/NEWT_SECRET=ci/' .env
+          APP_COMMIT=${{ github.sha }} docker compose build

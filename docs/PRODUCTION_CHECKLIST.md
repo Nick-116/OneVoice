@@ -1,0 +1,39 @@
+# Production deployment checklist
+
+## Server
+- [ ] Ubuntu 24.04 LTS, unattended security upgrades on, SSH key-only login (`PasswordAuthentication no`)
+- [ ] `ufw` allows only SSH inbound
+- [ ] `docker compose ps` shows **no** published ports (no `0.0.0.0:` / `:::` mappings)
+- [ ] Provider backups/snapshots enabled
+
+## Secrets & configuration
+- [ ] `./scripts/generate-secrets.sh` run; `secrets/` is mode 700 and **not** in git
+- [ ] `secrets/` and nightly `backups/` copied off-server
+- [ ] `.env`: real `PUBLIC_BASE_URL`, `ADMIN_ORIGIN`, Newt credentials, `COOKIE_SECURE=true`, `ADMIN_REQUIRE_MFA=true`
+- [ ] Logo placed in `branding/`
+
+## Pangolin / DNS
+- [ ] `captions.<domain>`: authentication off (the only public resource)
+- [ ] `admin.<domain>`: Pangolin SSO on, limited to staff
+- [ ] `audio.<domain>`: rules allow only church static IPs, then drop `/*`
+- [ ] `admin` and `audio` DNS records are DNS-only (grey cloud)
+- [ ] From cellular: `POST https://captions.<domain>/api/public/config` → 405; `https://audio.<domain>` unreachable
+
+## Application
+- [ ] First admin created; MFA enrolled; at least two admins exist (lockout protection)
+- [ ] Operators (production volunteers) created with role `operator`
+- [ ] Deepgram + Azure keys saved; **Test translation** works for every enabled language
+- [ ] Deepgram keyterms added (church name, pastors, towns, scripture books)
+- [ ] Campuses, languages and recurring services entered; **Upcoming** list looks right (check a date after the next DST change)
+- [ ] One sender per campus with *Allowed CIDRs* set; tokens installed on church computers
+- [ ] Sender app: correct Dante channel, "Launch at login" + "Start streaming automatically" on, levels around −30 to −12 dBFS during speech
+- [ ] QR codes printed from the dashboard and tested with iPhone and Android
+- [ ] Provider data-retention/training opt-outs configured; transcript retention decision documented
+
+## Rehearsal (before the first real service)
+- [ ] Full rehearsal with a manual start: English partials appear in about 1 s; Spanish finals in about 2–5 s
+- [ ] Unplug the sender's network for 30 s → phones show the "not connected" message → captions resume after reconnect
+- [ ] Stop the service → phones show "service has ended"
+- [ ] Load test with ≥ 200 viewers (`loadtest/sse_load.py`) during the rehearsal
+- [ ] `./scripts/backup.sh` works and a restore was tested on a scratch VM
+- [ ] Production staff briefed on Overview status colors, Start/Extend/Stop, and the troubleshooting table in OPERATIONS.md

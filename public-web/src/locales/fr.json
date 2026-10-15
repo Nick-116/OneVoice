@@ -1,0 +1,55 @@
+{
+  "app": { "title": "Sous-titres en direct" },
+  "common": { "loading": "Chargement…" },
+  "welcome": {
+    "title": "Bienvenue",
+    "prompt": "Choisissez votre langue pour suivre le culte d’aujourd’hui.",
+    "languageListLabel": "Langue",
+    "continue": "Continuer"
+  },
+  "header": {
+    "changeLanguage": "Changer de langue",
+    "currentLanguage": "Langue : {{language}}"
+  },
+  "status": {
+    "live": "En direct",
+    "connecting": "Connexion…",
+    "waiting": "En attente",
+    "offline": "Hors ligne",
+    "notLive": "Pas en direct"
+  },
+  "captions": {
+    "waiting": "En attente des sous-titres en direct…",
+    "disconnected": "Le service de diffusion n’est pas connecté pour le moment. Veuillez vous adresser à l’équipe de production.",
+    "unavailable": "Les sous-titres en direct sont temporairement indisponibles. Nous travaillons à les rétablir.",
+    "translationUnavailable": "La traduction est temporairement indisponible. Les sous-titres s’afficheront dès son retour.",
+    "jumpToLive": "Revenir au direct",
+    "regionLabel": "Sous-titres en direct",
+    "empty": "Les sous-titres s’afficheront ici."
+  },
+  "schedule": {
+    "startsInMinutes_one": "Le culte commence dans {{count}} minute",
+    "startsInMinutes_many": "Le culte commence dans {{count}} minutes",
+    "startsInMinutes_other": "Le culte commence dans {{count}} minutes",
+    "aboutToBegin": "Le culte va bientôt commencer",
+    "nextService": "Prochain culte",
+    "nextServiceAt": "Prochain culte : {{when}}",
+    "countdownLabel": "Temps restant avant le début du culte",
+    "ended": "Le culte d’aujourd’hui est terminé. Merci de vous être joints à nous.",
+    "idle": "Aucun culte n’est prévu pour le moment."
+  },
+  "errors": {
+    "retrying": "Les sous-titres sont temporairement indisponibles. Nouvelle tentative…",
+    "notFound": "Nous n’avons pas trouvé ce campus.",
+    "notFoundHint": "Vérifiez le lien ou le code QR, puis réessayez.",
+    "noCampuses": "Les sous-titres ne sont pas disponibles pour le moment.",
+    "backToStart": "Voir tous les campus"
+  },
+  "campus": { "chooseTitle": "Choisissez votre campus" },
+  "textSize": {
+    "label": "Taille du texte",
+    "decrease": "Réduire la taille du texte",
+    "increase": "Agrandir la taille du texte",
+    "current": "Taille du texte {{step}} sur {{total}}"
+  }
+}
