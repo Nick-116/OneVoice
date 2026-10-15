@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'" />
+  <!-- 'unsafe-eval': pywebview connects the page to the app with eval(); only local files are ever loaded. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'self'" />
   <title>OneVoice Sender</title>
   <link rel="stylesheet" href="app.css" />
 </head>
@@ -130,6 +131,7 @@
         </details>
 
         <div class="actions">
+          <span class="muted" id="lockedNote" hidden>Stop streaming to change these settings.</span>
           <span class="saved" id="savedNote" hidden>Saved</span>
           <button class="btn secondary" type="submit" id="saveBtn">Save settings</button>
         </div>

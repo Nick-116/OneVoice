@@ -3,6 +3,7 @@ import sys
 
 import keyring
 import pytest
+from pathlib import Path
 from keyring.backend import KeyringBackend
 from keyring.errors import PasswordDeleteError
 
@@ -137,3 +138,11 @@ def test_log_redaction():
 def test_short_server_addresses_are_completed(typed, url):
     assert normalize_server_url(typed) == url
     assert build_stream_url(typed, 16000).startswith(url + "?sample_rate=16000")
+
+
+def test_ui_allows_pywebview_bridge():
+    """pywebview connects the page to the app with eval(); a CSP without 'unsafe-eval' leaves the UI empty."""
+    html = (Path(__file__).resolve().parents[1] / "church_sender" / "ui" / "index.html").read_text()
+    csp = html.split('http-equiv="Content-Security-Policy" content="', 1)[1].split('"', 1)[0]
+    script_src = next(d for d in csp.split(";") if d.strip().startswith("script-src"))
+    assert "'unsafe-eval'" in script_src
