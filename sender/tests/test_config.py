@@ -105,7 +105,11 @@ def test_launch_agent_plist():
     assert data["ProgramArguments"][-1] == "--minimized"
     assert autostart.mac_plist_path().name == "org.onevoice.sender.plist"
     cmd = autostart.launch_command(["--minimized"])
-    assert cmd[-1] == "--minimized" and cmd[0] == sys.executable
+    # From source on Windows the windowless pythonw.exe is used so no console appears at login.
+    expected = sys.executable
+    if sys.platform == "win32" and expected.lower().endswith("python.exe"):
+        expected = expected[: -len("python.exe")] + "pythonw.exe"
+    assert cmd[-1] == "--minimized" and cmd[0].lower() == expected.lower()
     assert autostart.windows_command_line([r"C:\Program Files\App\app.exe", "--minimized"]) == r'"C:\Program Files\App\app.exe" --minimized'
 
 
