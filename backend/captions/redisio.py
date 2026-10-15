@@ -28,7 +28,8 @@ def make_redis(decode: bool = True) -> aioredis.Redis:
 
 
 async def record_error(r: aioredis.Redis, component: str, message: str, campus_id: int | None = None) -> None:
-    """Keep a short rolling list of recent errors for the admin dashboard."""
+    """Keep a short rolling list of recent errors for the admin dashboard (and log it for `docker logs`)."""
+    log.warning("%s error%s: %s", component, f" (campus {campus_id})" if campus_id is not None else "", message[:500])
     entry = json.dumps({"at": time.time(), "component": component, "campus_id": campus_id, "message": message[:500]})
     try:
         async with r.pipeline(transaction=False) as p:
