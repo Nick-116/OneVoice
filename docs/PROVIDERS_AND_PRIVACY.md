@@ -47,7 +47,7 @@ Assumptions: 2 campuses × ~6 service-hours/week ≈ 52 hours/month. Speech runs
 * **English (source) viewers see partial results** as they're recognized, typically 300–800 ms after the words are spoken.
 * **Partial vs final:**
   - Partials are shown in grey on the same line and replaced in place by the final version, so nothing unstable is presented as final.
-  - A sentence becomes final when the provider marks it stable and it ends in punctuation, at a speaker pause, or when a run-on passes ~220 characters (split at a comma or space).
+  - A caption line becomes final when the provider marks it stable and it ends in punctuation, at a speaker pause, or once ~60 characters have built up and there is a clause break (comma, semicolon, colon or dash) to cut at. Long sentences are translated in pieces instead of waiting for the period. A run-on with no break is split at a space after ~140 characters.
 * **Translated viewers get each finalized sentence** about 1.5–4 s after it's spoken: STT finalization plus one translation round trip of ~100–300 ms.
 * **Metrics:** the dashboard shows measured p50/p95 for STT partials, STT finals, translation round trips, and audio-to-translated-caption end to end, per language.
 

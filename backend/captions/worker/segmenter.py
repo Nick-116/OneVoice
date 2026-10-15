@@ -9,8 +9,11 @@ Strategy for low flicker without showing unstable text as final:
   emitted as a single **partial** line with the *next* sequence number. When
   the final for that number arrives, clients replace the partial in place.
 * A pause (endpoint) flushes the remaining stable text as a final even
-  without punctuation, and a very long run-on sentence is split at a comma or
-  word boundary so translations are never delayed too long.
+  without punctuation.
+* Long sentences don't wait for their period: once enough stable text has
+  built up, it is cut at the last clause break (comma, semicolon, colon, dash)
+  so translation can start mid-sentence. Same characters, so no extra cost.
+* A run-on with no clause break is split at a word boundary.
 """
 
 from __future__ import annotations
@@ -19,6 +22,7 @@ import re
 from dataclasses import dataclass
 
 SENTENCE_END = re.compile(r"(?<=[.!?。！？؟])[\"'”’)\]]*\s+")
+CLAUSE_BREAK = re.compile(r"[,;:，；：、]\s+|\s+[—–-]{1,2}\s+")
 TERMINAL = re.compile(r"[.!?。！？؟][\"'”’)\]]*$")
 # Abbreviations that end in a period but rarely end a sentence.
 ABBREVIATIONS = {"mr.", "mrs.", "ms.", "dr.", "st.", "rev.", "vs.", "jr.", "sr.", "ch.", "vv.", "v."}
@@ -33,8 +37,9 @@ class Segment:
 
 
 class Segmenter:
-    def __init__(self, max_chars: int = 220, start_seq: int = 1) -> None:
+    def __init__(self, max_chars: int = 140, clause_chars: int = 60, start_seq: int = 1) -> None:
         self.max_chars = max_chars
+        self.clause_chars = clause_chars
         self.seq = start_seq
         self.committed = ""
         self.interim = ""
@@ -82,6 +87,12 @@ class Segmenter:
             sentence, self.committed = self.committed[:cut].strip(), self.committed[cut:].strip()
             if sentence:
                 out.append(self._final(sentence, audio_end))
+        while len(self.committed) >= self.clause_chars:
+            cut = self._clause_cut(self.committed)
+            if cut is None:
+                break
+            piece, self.committed = self.committed[:cut].strip(), self.committed[cut:].strip()
+            out.append(self._final(piece, audio_end))
         while len(self.committed) > self.max_chars:
             split = self._soft_split(self.committed)
             piece, self.committed = self.committed[:split].strip(), self.committed[split:].strip()
@@ -100,6 +111,14 @@ class Segmenter:
             if last_word not in ABBREVIATIONS:
                 return len(text)
         return None
+
+    def _clause_cut(self, text: str) -> int | None:
+        """End of the last clause break that leaves a piece of at least clause_chars // 2."""
+        best = None
+        for m in CLAUSE_BREAK.finditer(text):
+            if m.start() >= self.clause_chars // 2:
+                best = m.end()
+        return best
 
     def _soft_split(self, text: str) -> int:
         window = text[: self.max_chars]

@@ -55,3 +55,24 @@ def test_flush_drops_unstable_interim():
     out = s.flush()
     assert (1, "Amen", True) in texts(out)
     assert all("and" not in seg.text for seg in out if seg.final)
+
+
+def test_long_sentence_is_cut_at_a_clause_break_before_its_period():
+    seg = Segmenter()
+    out = seg.on_stable("In the beginning God created the heavens and the earth, and the earth was without form")
+    finals = [s.text for s in out if s.final]
+    assert finals == ["In the beginning God created the heavens and the earth,"]
+    assert seg.committed == "and the earth was without form"
+
+
+def test_short_text_with_a_comma_waits_for_more():
+    seg = Segmenter()
+    out = seg.on_stable("Good morning, church")
+    assert not [s for s in out if s.final]
+    assert seg.committed == "Good morning, church"
+
+
+def test_early_comma_is_not_used_as_a_cut():
+    seg = Segmenter()
+    out = seg.on_stable("Well, we are going to look at the passage that we read together last week")
+    assert not [s for s in out if s.final]
