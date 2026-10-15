@@ -11,7 +11,7 @@ branding/logo.*
 !branding/logo.example.svg
 sender/build/
 sender/dist/
-updater/
+/updater/
 .DS_Store
 *.pem
 *.key

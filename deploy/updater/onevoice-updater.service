@@ -1,0 +1,26 @@
+# OneVoice host updater. Install:
+#   sudo cp deploy/updater/onevoice-updater.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now onevoice-updater
+# Adjust WorkingDirectory/ExecStart if the app is not in /opt/onevoice.
+[Unit]
+Description=OneVoice updater (pulls updates from GitHub on request from the admin dashboard)
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/onevoice
+ExecStart=/usr/bin/python3 /opt/onevoice/scripts/updater.py watch
+Environment=UPDATER_BRANCH=main
+Environment=UPDATER_COMPOSE_FILES=compose.yml
+Restart=always
+RestartSec=10
+# Needs root for Docker and to own ./updater for the admin container (uid 10001).
+User=root
+NoNewPrivileges=true
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
