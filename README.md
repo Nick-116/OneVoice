@@ -10,6 +10,11 @@
 <p align="center">
   <a href="https://github.com/Nick-116/OneVoice/actions/workflows/ci.yml"><img src="https://github.com/Nick-116/OneVoice/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/Nick-116/OneVoice/releases/latest"><img src="https://img.shields.io/github/v/release/Nick-116/OneVoice?label=sender%20app" alt="Latest release" /></a>
+  <a href="https://nick-116.github.io/OneVoice/"><img src="https://img.shields.io/badge/docs-nick--116.github.io%2FOneVoice-6d28d9" alt="Documentation" /></a>
+</p>
+
+<p align="center">
+  📖 <b><a href="https://nick-116.github.io/OneVoice/">Read the documentation</a></b>
 </p>
 
 ---
