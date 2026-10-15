@@ -1,4 +1,4 @@
-"""Private audio ingestion service (port 8082, Pangolin resource audio.example.com).
+"""Private audio ingestion service (port 8082).
 
 Protocol (WebSocket ``/ingest/v1/stream``):
 

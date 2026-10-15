@@ -10,7 +10,7 @@
 | `worker` | Schedule enforcement, STT, translation, metrics | PostgreSQL (read config, write usage), Redis, internet (APIs) |
 | `postgres` | Configuration, schedules, users, usage | – |
 | `redis` | Live caption pub/sub, audio buffer, status (in memory, no persistence) | – |
-| `newt` | Tunnel to your Pangolin server | the three edge networks |
+| `local-audio` (optional) | Capture from an audio interface on the server | Redis (audio keys only) |
 
 All containers restart automatically (`unless-stopped`) and have health checks. If the worker stops publishing, the public site shows "temporarily unavailable" instead of stale data.
 
@@ -80,10 +80,10 @@ sudo python3 scripts/updater.py apply
 
 | Symptom | Check |
 |---|---|
-| Sender "Authentication failed" | Token copied fully? Sender revoked? Church public IP changed (Pangolin rule and sender *Allowed CIDRs*)? |
+| Sender "Authentication failed" | Token copied fully? Sender revoked? Church public IP changed (proxy IP rule and sender *Allowed CIDRs*)? Campus set to *local* audio (the Sender says so)? |
 | Sender connected, phones say "not connected" | Level meter flat at −120 dBFS means digital silence. Check the Dante route and the channel selected in the sender app. |
 | "Waiting for live captions…" never clears | Recent Errors → STT key/quota. Test with the `simulated` STT provider to isolate. |
 | One language missing on phones | Disabled in Languages, not enabled for that campus, or not supported by the current translation provider. |
 | Phones show countdown during the service | Schedule time zone / weekday wrong, or the occurrence was cancelled. Check Services → Upcoming. Use **Start service now** as a fallback. |
-| Admin login loops | `ADMIN_ORIGIN` must exactly match the dashboard URL, and `COOKIE_SECURE=true` requires HTTPS (Pangolin). |
+| Admin login loops | `ADMIN_ORIGIN` must exactly match the dashboard address in the browser (several can be listed, comma-separated). `COOKIE_SECURE=true` only works over HTTPS; use `false` for plain `http://`. |
 | Locked out of MFA | `docker compose run --rm admin python -m captions.admin.cli reset-mfa --username NAME` |

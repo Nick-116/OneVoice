@@ -64,7 +64,7 @@ Hardware interpretation systems and human interpreters for every language are ex
 | **VPS + Sender on the church network** (what we use) | Most reliable; phones can use cellular data or Wi-Fi; easy to reach from anywhere. |
 | **Everything on one computer at the church** | No VPS cost. Run the server with Docker on the same Mac/PC as the Sender (or another machine on the network). |
 | **Local network only, plain HTTP** | Simplest. Phones on the church Wi-Fi open `http://<server-ip>:8080/campus/<campus>`. |
-| **HTTPS through a reverse proxy** | Recommended whenever it’s reachable from the internet. Works behind Pangolin (guide included), Caddy, Nginx, Traefik or Cloudflare Tunnel. The public site, admin dashboard and audio input are separate ports, so each can be exposed (or not) independently. |
+| **HTTPS through a reverse proxy** | Recommended whenever it’s reachable from the internet. Any reverse proxy works: Pangolin, Caddy, Nginx, Traefik, Cloudflare Tunnel… The caption site, dashboard and audio input are separate ports (8080, 8081, 8082), so each can be exposed or kept private independently. |
 
 ## Features
 
@@ -142,7 +142,7 @@ You need Docker with the Compose plugin; see [docs/DEPLOYMENT.md](docs/DEPLOYMEN
 ```bash
 git clone https://github.com/Nick-116/OneVoice.git onevoice && cd onevoice
 ./scripts/generate-secrets.sh           # random passwords and keys into ./secrets (never committed)
-cp .env.example .env                     # set your addresses (see comments in the file)
+cp .env.example .env                     # addresses and ports (defaults work on this computer)
 docker compose up -d --build
 docker compose logs admin | grep "setup code"
 ```
@@ -155,8 +155,18 @@ Open the admin dashboard and enter the setup code. The wizard walks you through:
 
 Then add campuses, service times and a sender token, and print the QR codes.
 
-* **On one computer / your local network:** `docker compose -f compose.yml -f compose.local.yml up -d --build` publishes the caption site on port 8080, the dashboard on 8081 and the audio input on 8082. Phones on the church Wi-Fi open `http://<computer-ip>:8080/campus/<campus>`. The comments in [compose.local.yml](compose.local.yml) list the `.env` values to set (plain HTTP needs `COOKIE_SECURE=false`).
-* **On a VPS behind a reverse proxy:** keep the ports private and point the proxy at the three services: public site `:8080`, admin `:8081`, audio `:8082`. [docs/SECURITY.md](docs/SECURITY.md) has the exact allow-list (only the caption pages public), and [docs/PANGOLIN.md](docs/PANGOLIN.md) has the step-by-step Pangolin setup.
+### Ports
+
+| Port | What | Who needs it |
+|---|---|---|
+| **8080** | Caption site (`/campus/<campus>`) | Phones |
+| **8081** | Admin dashboard | Staff |
+| **8082** | Audio input for the Sender app | The Sender at church (not needed with local audio input) |
+
+* **Local setup:** phones on the church Wi-Fi open `http://<server-ip>:8080/campus/<campus>`. This is the default.
+* **Reverse proxy setup (HTTPS):** set `PUBLIC_BIND`, `ADMIN_BIND` and `INGEST_BIND` to `127.0.0.1` in `.env` and point your proxy at `127.0.0.1:8080` / `8081` / `8082`. If the proxy runs in Docker, `127.0.0.1` is the proxy container itself: join OneVoice’s Docker networks and use `public:8080`, `admin:8081` and `ingest:8082` instead.
+
+[Ports & reverse proxy](docs/REVERSE_PROXY.md) has both setups step by step, the paths to allow publicly, and Caddy/Nginx examples.
 
 ## Documentation
 
@@ -164,9 +174,9 @@ Then add campuses, service times and a sender token, and print the QR codes.
 
 | | |
 |---|---|
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Server sizing (no GPU) and step-by-step install |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Hardware (no GPU) and step-by-step install |
 | [SECURITY.md](docs/SECURITY.md) | What’s exposed, reverse-proxy allow-list, hardening |
-| [PANGOLIN.md](docs/PANGOLIN.md) | Pangolin reverse proxy setup step by step |
+| [REVERSE_PROXY.md](docs/REVERSE_PROXY.md) | Ports, local setup vs. reverse proxy setup |
 | [UPDATES.md](docs/UPDATES.md) | One-click updates from GitHub |
 | [PROVIDERS_AND_PRIVACY.md](docs/PROVIDERS_AND_PRIVACY.md) | Providers, pricing, cost controls, privacy |
 | [AUDIO.md](docs/AUDIO.md) | Audio input: local interface on the server, or the Sender app |

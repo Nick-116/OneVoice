@@ -30,8 +30,8 @@ docker run --rm -v "$PWD/sender":/src -w /src python:3.12-slim sh -c "pip instal
 
 1. Admin → Providers & Settings: STT = `simulated`, Translation = `simulated`.
 2. Create a campus and a sender; copy the token.
-3. Run `python tools/simulate_sender.py --url ws://localhost:8082/ingest/v1/stream --token cs_...` (locally via `compose.dev.yml`).
-4. Overview → **Start service now**. Open `http://localhost:8080/<campus>` and choose any language.
+3. Run `python tools/simulate_sender.py --url ws://localhost:8082/ingest/v1/stream --token cs_...` (against a local install).
+4. Overview → **Start service now**. Open `http://localhost:8080/campus/<campus>` and choose any language.
 
 The simulated STT releases words at speaking pace *only while audio is arriving*, so stopping the simulator reproduces a real disconnection. To test a real provider without the console, pass a recorded sermon with `--wav sermon.wav`. Simulated translation can be told to fail specific languages (`fail_languages`) to rehearse provider outages.
 

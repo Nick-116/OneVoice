@@ -2,11 +2,10 @@
 """Generate the README screenshots from a throwaway demo stack with example data.
 
     # 1. start an isolated demo copy (separate database/volumes, ports 28080-28082)
-    export DEV_PUBLIC_PORT=28080 DEV_ADMIN_PORT=28081 DEV_INGEST_PORT=28082 \
-           PUBLIC_BASE_URL=http://localhost:28080 ADMIN_ORIGIN=http://localhost:28081 \
-           COOKIE_SECURE=false TRUSTED_PROXY_HOPS=0 PUBLIC_TRUSTED_PROXY_HOPS=0
-    docker compose -p onevoice-demo -f compose.yml -f compose.dev.yml up -d --build \
-        postgres redis migrate worker ingest public admin
+    export PUBLIC_PORT=28080 ADMIN_PORT=28081 INGEST_PORT=28082 \
+           PUBLIC_BIND=127.0.0.1 ADMIN_BIND=127.0.0.1 INGEST_BIND=127.0.0.1 \
+           PUBLIC_BASE_URL=http://localhost:28080 ADMIN_ORIGIN=http://localhost:28081
+    docker compose -p onevoice-demo up -d --build
     # 2. run this (needs Google Chrome installed; pip install playwright==1.48.0 pyotp==2.9.0 websockets==13.1)
     python tools/demo/screenshots.py
     # 3. throw the demo away

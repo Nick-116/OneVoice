@@ -1,0 +1,9 @@
+# Local audio input from an audio interface on THIS machine (Linux only).
+#   COMPOSE_PROFILES=local-audio   (in .env)
+#   docker compose -f compose.yml -f compose.audio.yml up -d --build
+# Gives the local-audio container access to /dev/snd. Docker on macOS/Windows cannot
+# reach audio hardware: there, run the OneVoice Sender app on the same computer instead.
+services:
+  local-audio:
+    devices: ["/dev/snd:/dev/snd"]
+    group_add: ["audio"]

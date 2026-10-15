@@ -1,12 +1,12 @@
 # API Reference
 
-Three separate HTTP services, each its own container, port and Pangolin resource.
+Three separate HTTP services, each its own container and port.
 
-| Service | Port | Pangolin resource | Who |
+| Service | Port | Typical exposure | Who |
 |---|---|---|---|
-| public-web | 8080 | `captions.example.com` (public) | congregation phones |
-| admin | 8081 | `admin.example.com` (private, SSO) | staff |
-| ingest | 8082 | `audio.example.com` (private, IP allowlist) | audio sender app |
+| public-web | 8080 | public (e.g. `captions.example.org`) | congregation phones |
+| admin | 8081 | private | staff |
+| ingest | 8082 | church only | audio sender app |
 
 All timestamps are ISO-8601 UTC strings ending in `Z` unless noted; `server_time`, `ts`, `*_at` numeric fields are Unix epoch seconds (float).
 
@@ -196,7 +196,7 @@ Occurrence exceptions (operators allowed): `POST /api/occurrences/cancel {key}` 
 `wss://audio.example.com/ingest/v1/stream?sample_rate=16000&channels=1&format=s16le`
 
 * Header `Authorization: Bearer cs_<32 hex>_<secret>` (token from Admin → Audio senders). Invalid/revoked/IP-not-allowed → handshake rejected (HTTP 403).
-* Any extra headers Pangolin needs (e.g. resource access-token headers) may be added by the sender.
+* Any extra headers a reverse proxy needs (e.g. an access-token header) may be added by the sender.
 * Client → server: binary frames, raw signed 16-bit little-endian mono PCM, ≤ 32 000 bytes each (send 100 ms = 3 200 bytes at 16 kHz). Byte rate above 3× real time → disconnected.
 * Server → client: text JSON every 2 s `{"type":"status","live":bool,"campus":"slug","server_time":..}`. `live:false` = outside a service window (audio only feeds the level meter).
 * Silence for 15 s with no frames → server closes (4008). Close code 4009 = replaced by a newer connection from the same campus; 4003 = revoked.

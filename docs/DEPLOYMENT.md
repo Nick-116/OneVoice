@@ -1,69 +1,86 @@
-# Deployment (clean Ubuntu VPS)
+# Installation
 
-## VPS sizing
+OneVoice runs with Docker Compose on any Linux server, Mac or Windows PC: a computer at the church, a mini-PC, or a VPS. It publishes three ports. Use them directly on your local network, or put a reverse proxy in front of them for HTTPS. Both setups are explained in [Ports & reverse proxy](REVERSE_PROXY.md).
 
-**No GPU needed.** Speech recognition and translation run through external APIs. The VPS only relays audio and text.
-
-| | Minimum (fine for 2 campuses, 500 viewers) | Comfortable headroom |
+| Port | What it serves | Who uses it |
 |---|---|---|
-| vCPU | 2 | 4 |
+| **8080** | Caption site (`/campus/<campus>`) | Phones in the congregation |
+| **8081** | Admin dashboard | Staff |
+| **8082** | Audio input for the OneVoice Sender app | The Sender at church (not needed with local audio input) |
+
+## Hardware
+
+**No GPU needed.** Speech recognition and translation run through external APIs, so the server only relays audio and text.
+
+| | Minimum (2 campuses, 500 viewers) | Comfortable |
+|---|---|---|
+| CPU | 2 cores | 4 cores |
 | RAM | 4 GB | 8 GB |
-| Disk | 40 GB SSD | 80 GB NVMe |
-| Bandwidth | <100 GB/month in practice | – |
-| OS | Ubuntu 24.04 LTS | Ubuntu 24.04 LTS |
+| Disk | 40 GB SSD | 80 GB SSD |
+| Network | under 100 GB/month in practice | – |
 
-The New York / New Jersey regions of DigitalOcean (NYC3), Vultr (New Jersey) or Akamai/Linode (Newark) are all about 5–10 ms from Connecticut. The 2 vCPU / 4 GB tier costs roughly $24/month. Pangolin runs elsewhere, so this VPS hosts only the caption stack and Newt.
+Load per campus:
 
-Load per campus: about 256 kbps of audio in, and about 1 KB/s of captions per viewer out. 200 viewers is about 1.6 Mbps.
+- about 256 kbps of audio in;
+- about 1 KB/s of captions per phone out. 200 phones is about 1.6 Mbps.
 
-## 1. Prepare the server
+For a VPS, a 2 vCPU / 4 GB plan (about $24/month at most providers) in a region near the church is plenty.
+
+## 1. Install Docker
+
+**Linux (Ubuntu/Debian):**
 
 ```bash
 sudo apt update && sudo apt -y upgrade
-sudo apt -y install ca-certificates curl git ufw unattended-upgrades
-sudo dpkg-reconfigure -plow unattended-upgrades
-
-# Firewall: only SSH inbound. Newt makes an OUTBOUND tunnel to Pangolin; no web ports are opened here.
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow OpenSSH
-sudo ufw enable
-
-# Docker Engine + Compose plugin (official repository)
+sudo apt -y install ca-certificates curl git unattended-upgrades
 curl -fsSL https://get.docker.com | sudo sh
 sudo usermod -aG docker "$USER"   # log out and back in afterwards
 ```
 
-Docker can bypass ufw for *published* ports. This stack publishes **none**, so that doesn't apply here. `docker compose ps` should show no `0.0.0.0:` port mappings.
+**macOS / Windows:** install [Docker Desktop](https://www.docker.com/products/docker-desktop/) and Git.
 
-## 2. Install the application
+## 2. Get OneVoice
 
 ```bash
 sudo mkdir -p /opt/onevoice && sudo chown "$USER" /opt/onevoice
 git clone https://github.com/Nick-116/OneVoice.git /opt/onevoice
 cd /opt/onevoice
-
-./scripts/generate-secrets.sh          # creates ./secrets/* (random DB/Redis passwords, app secret)
-cp .env.example .env && nano .env      # set domains + Newt credentials
+./scripts/generate-secrets.sh          # random database/Redis passwords and app secret in ./secrets
+cp .env.example .env
 ```
 
-Optionally put provider keys in `secrets/deepgram_api_key` and `secrets/azure_translator_key`, or enter them later in the dashboard, where they are stored encrypted.
+On macOS/Windows, any folder works; run the same commands from it.
 
-## 3. Build and start
+## 3. Edit `.env`
+
+The defaults work for a quick test on the same computer (`http://localhost:8080`, `http://localhost:8081`). For real use, set these:
+
+| Setting | Local setup (church network) | Reverse proxy setup (HTTPS) |
+|---|---|---|
+| `PUBLIC_BASE_URL` | `http://192.168.1.20:8080` | `https://captions.example.org` |
+| `ADMIN_ORIGIN` | `http://192.168.1.20:8081` | `https://admin.example.org` |
+| `PUBLIC_BIND` / `ADMIN_BIND` / `INGEST_BIND` | `0.0.0.0` | `127.0.0.1` (or see [Docker proxies](REVERSE_PROXY.md#proxy-running-in-docker)) |
+| `TRUSTED_PROXY_HOPS` | `0` | `1` |
+| `COOKIE_SECURE` | `false` | `true` |
+
+`192.168.1.20` stands for the server's address on your network. `PUBLIC_BASE_URL` is what the QR codes point to. `ADMIN_ORIGIN` must exactly match how you type the dashboard address in the browser, and can list several addresses separated by commas.
+
+## 4. Start
 
 ```bash
-APP_COMMIT=$(git rev-parse HEAD) docker compose build
-docker compose up -d
-docker compose ps        # all services "healthy"; migrate "exited (0)"
+docker compose up -d --build
+docker compose ps                  # everything "healthy"; migrate "exited (0)"
 ```
 
-## 4. First-run setup
+The first build takes a few minutes. All OneVoice images are built on your machine from this repository; nothing is downloaded except standard images like PostgreSQL and Redis.
+
+## 5. First-run setup
 
 ```bash
 docker compose logs admin | grep "setup code"
 ```
 
-Open `https://admin.example.com` (Pangolin SSO comes first, then OneVoice) and follow the setup wizard:
+Open the dashboard (port 8081) and follow the setup wizard:
 
 1. Enter the **setup code** and create the first administrator.
 2. Scan the QR code with an authenticator app (two-factor sign-in).
@@ -72,62 +89,47 @@ Open `https://admin.example.com` (Pangolin SSO comes first, then OneVoice) and f
 
 The setup code only works while no administrator exists, so nobody else can claim a fresh install. A command-line fallback exists: `docker compose run --rm admin python -m captions.admin.cli create-user --username NAME --role admin`.
 
-## 5. Configure in the dashboard
+## 6. Configure
 
-1. **Branding:** church name, logo (PNG), button color and fonts. Phones pick changes up within a minute.
-2. **Providers & Settings** (already done in the wizard; revisit any time):
-   - Choose Deepgram + Azure, paste the keys and set the Azure region.
-   - Set the public base URL, e.g. `https://captions.example.com`.
-   - Add Deepgram keyterms such as the church name, pastors' names, local towns and scripture book names.
-3. **Campuses:** create each campus. The slug becomes the URL, e.g. `east-hartford` → `https://captions.example.com/east-hartford`. Choose its languages.
-4. **Services:** add the recurring services (e.g. Sunday 9:00–10:30, 11:00–12:30; Wednesday 19:00–20:30). Default timezone is America/New_York.
-5. **Audio → Senders:**
-   - Create one sender per campus and add the campus's public IP under *Allowed CIDRs*.
-   - Copy the token, which is shown once, into the church computer's sender app.
-6. **QR codes:** download or print per campus. The URLs never change between services.
+1. **Branding:** church name, logo (PNG), button color and fonts.
+2. **Campuses:** create each campus. Its page is `<PUBLIC_BASE_URL>/campus/<slug>`.
+   - Choose the languages.
+   - Choose the **audio source**: a local input on this server, or the Sender app (see [Audio input](AUDIO.md)).
+3. **Services:** add the weekly service times. The default time zone is America/New_York.
+4. **Audio → Senders** (only for campuses using the Sender app): create a sender and paste its token into the OneVoice Sender.
+5. **QR codes:** print one per campus. The addresses never change between services.
+6. **Providers & Settings:** add Deepgram keyterms such as the church name, pastors’ names, local places and Bible book names.
 
-## 6. Updates
+## 7. Firewall
 
-Install the host updater so the dashboard's **Updates** page can install new versions from GitHub. See [UPDATES.md](UPDATES.md).
+Docker opens published ports past most host firewalls (including `ufw`). So decide with `*_BIND` who can reach each port:
+
+| Setup | Port 8080 (captions) | Port 8081 (admin) | Port 8082 (audio) |
+|---|---|---|---|
+| Local network | `0.0.0.0`: phones on the Wi-Fi | `0.0.0.0` or `127.0.0.1` (dashboard only on the server itself) | `0.0.0.0` if a Sender on another computer uses it |
+| Reverse proxy on the same server | `127.0.0.1` | `127.0.0.1` | `127.0.0.1` |
+
+On a VPS, keep SSH as the only directly open port. Let the reverse proxy be the only thing listening on 80/443.
+
+## 8. Updates
+
+Install the updater so the dashboard’s **Updates** page can install new versions from GitHub. See [Updates](UPDATES.md).
 
 ```bash
 sudo cp deploy/updater/onevoice-updater.service /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now onevoice-updater
 ```
 
-## 7. Pangolin
+## 9. Test before Sunday
 
-Follow [PANGOLIN.md](PANGOLIN.md): one public resource, two private ones.
+* Dashboard → Live overview → **Start service now**.
+* Start the audio: local input, the Sender app, or the simulator below.
+* Scan the QR code with a phone and pick a language. Captions should appear within a few seconds.
+* **Stop service.** Phones should show “Today’s service has ended”.
 
-## 8. Test before Sunday
+To test without church audio, choose the **simulated** providers in the dashboard, create a sender, and run:
 
-* Admin → Overview → **Start service now** (15 min).
-* Start the sender at the church, or simulate one (below).
-* Scan the QR code with a phone and pick Spanish. Captions should appear. Check that the latency numbers on the Overview are sensible.
-* **Stop service.** Phones should show the "service has ended" message.
-
-To simulate without the church computer, run this from any machine that can reach `audio.example.com`:
 ```bash
 pip install websockets==13.1
-python tools/simulate_sender.py --url wss://audio.example.com/ingest/v1/stream --token cs_... --wav sermon.wav
+python tools/simulate_sender.py --url ws://localhost:8082/ingest/v1/stream --token cs_...
 ```
-(Simulating from outside church needs a temporary IP rule in Pangolin and on the sender.)
-
-## Local development (laptop)
-
-```bash
-./scripts/generate-secrets.sh
-cat > .env <<'EOF'
-PUBLIC_BASE_URL=http://localhost:8080
-ADMIN_ORIGIN=http://localhost:8081
-PANGOLIN_ENDPOINT=https://unused.invalid
-NEWT_ID=unused
-NEWT_SECRET=unused
-COOKIE_SECURE=false
-TRUSTED_PROXY_HOPS=0
-PUBLIC_TRUSTED_PROXY_HOPS=0
-EOF
-docker compose -f compose.yml -f compose.dev.yml up -d --build postgres redis migrate worker ingest public admin
-```
-
-`compose.dev.yml` publishes the three app ports on 127.0.0.1 only (for development, never in production). Select the `simulated` providers in the dashboard, create a campus and a sender, then run `python tools/simulate_sender.py --token ...`.

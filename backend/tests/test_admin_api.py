@@ -136,6 +136,20 @@ async def test_csrf_token_and_origin_are_enforced(admin):
     assert r.status_code == 201
 
 
+async def test_several_admin_origins_are_accepted(admin, monkeypatch):
+    from captions.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "admin_origin", "http://192.168.1.20:8081, http://admin.test")
+    for origin in ("http://192.168.1.20:8081", "http://admin.test"):
+        r = await admin.c.get("/api/auth/me")
+        r = await admin.c.post("/api/campuses", json={"slug": f"o{len(origin)}", "name": "X"},
+                               headers={"X-CSRF-Token": admin.csrf, "Origin": origin})
+        assert r.status_code == 201, (origin, r.text)
+    r = await admin.c.post("/api/campuses", json={"slug": "evil", "name": "X"},
+                           headers={"X-CSRF-Token": admin.csrf, "Origin": "http://evil.example"})
+    assert r.status_code == 403
+
+
 async def test_operator_cannot_use_admin_routes(clean, run_server):
     await create_user("olivia", role="operator")
     async with run_server(create_app()) as srv, httpx.AsyncClient(base_url=srv.base) as c:

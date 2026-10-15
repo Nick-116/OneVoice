@@ -6,25 +6,25 @@
  CHURCH (per campus)                                VPS (Docker Compose, no published ports)
  ┌──────────────────────────┐                        ┌────────────────────────────────────────────────────────────┐
  │ Yamaha console speech mix│                        │                                                            │
- │        │ Dante           │   wss (TLS) via        │  newt ──► ingest:8082 ──XADD (bounded)──► Redis stream     │
- │ Dante VSC / AVIO USB     │──Pangolin, church IPs──►│                                             │              │
+ │        │ Dante           │   ws(s) to port 8082   │           ingest:8082 ──XADD (bounded)──► Redis stream     │
+ │ Dante VSC / AVIO USB     │──(or local input)───────►│                                             │              │
  │ Church Audio Sender app  │   + per-campus token   │                                worker ◄─────┘              │
  └──────────────────────────┘                        │   schedule engine ─ STT session (Deepgram) ─ segmenter      │
                                                      │                       └─ 1 translation channel per viewed lang│
- PHONES ─ https://captions.<domain>/<campus> ───────►│  newt ──► public:8080 ◄── Redis pub/sub cap:<campus>:<lang>  │
+ PHONES ─ <caption site>/campus/<campus> ───────────►│  port 8080 public ◄── Redis pub/sub cap:<campus>:<lang>  │
            (SSE, GET only)                           │            one subscription, in-process fan-out to viewers  │
- STAFF ─ https://admin.<domain> (SSO+login+TOTP) ───►│  newt ──► admin:8081 ──► PostgreSQL (config) ──► worker    │
+ STAFF ─ dashboard (login+TOTP) ────────────────────►│  port 8081 admin ──► PostgreSQL (config) ──► worker    │
                                                      └────────────────────────────────────────────────────────────┘
 ```
 
 | Concern | Where it is enforced |
 |---|---|
-| Only the caption site is public | Pangolin resources (network) and separate containers, ports and internal Docker networks (host) |
+| Only the caption site is public | Separate containers, ports (`*_BIND`) and Docker networks; optional reverse-proxy allow-list |
 | Public API is read-only | Method allow-list middleware (GET/HEAD only); no DB credentials; Redis ACL allows reads + viewer counters only; no admin code routes |
 | Captions only during services | Worker starts/stops pipelines from the schedule; ingest forwards audio only while `campus:live:<id>` exists; public refuses streams unless status is live and closes them when it ends |
 | Campus isolation | Audio keyed by campus id from the authenticated sender token (never client-supplied); separate channels `cap:<slug>:<lang>`; tests verify no cross-delivery |
-| Admin authorization | App sessions + TOTP + CSRF + roles, independent of Pangolin SSO |
-| Unauthorized audio injection | Pangolin IP rules, sender tokens (SHA-256 hashed, revocable instantly), per-sender CIDR allowlist, frame size and byte-rate limits, one active connection per campus |
+| Admin authorization | App sessions + TOTP + CSRF + roles, independent of any proxy login |
+| Unauthorized audio injection | Optional proxy IP rules, sender tokens (SHA-256 hashed, revocable instantly), per-sender CIDR allowlist, frame size and byte-rate limits, one active connection per campus |
 
 ## Why Redis
 

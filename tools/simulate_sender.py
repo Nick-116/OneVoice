@@ -119,7 +119,7 @@ def main() -> None:
     p.add_argument("--url", default="ws://localhost:8082/ingest/v1/stream")
     p.add_argument("--token", required=True)
     p.add_argument("--wav")
-    p.add_argument("--header", action="append", help="extra header 'Name: value' (e.g. Pangolin access token)")
+    p.add_argument("--header", action="append", help="extra header 'Name: value' (e.g. a reverse-proxy access token)")
     try:
         asyncio.run(run(p.parse_args()))
     except KeyboardInterrupt:

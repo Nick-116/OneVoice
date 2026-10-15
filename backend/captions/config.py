@@ -40,7 +40,7 @@ class Settings(BaseSettings):
 
     # Public URL the QR codes point at, e.g. https://captions.example.com
     public_base_url: str = "http://localhost:8080"
-    # Origin of the admin dashboard; used for CSRF origin checks.
+    # Origin(s) of the admin dashboard, comma-separated; used for CSRF origin checks.
     admin_origin: str = "http://localhost:8081"
     # Set to false only for local plain-HTTP development.
     cookie_secure: bool = True
@@ -48,9 +48,9 @@ class Settings(BaseSettings):
     admin_session_idle_minutes: int = 480
     admin_session_max_hours: int = 24
 
-    # Number of trusted reverse-proxy hops that append to X-Forwarded-For.
-    # Pangolin (Traefik) -> Newt -> app is 1. Add 1 if Cloudflare proxying is on.
-    trusted_proxy_hops: int = 1
+    # Number of trusted reverse proxies in front that append to X-Forwarded-For
+    # (0 = clients connect directly; 1 = one reverse proxy; +1 for a CDN like Cloudflare).
+    trusted_proxy_hops: int = 0
 
     # Public caption limits
     public_max_streams: int = 3000
@@ -84,6 +84,10 @@ class Settings(BaseSettings):
         if not key:
             raise RuntimeError("APP_SECRET_KEY (or APP_SECRET_KEY_FILE) must be set")
         return key
+
+    @property
+    def admin_origins(self) -> set[str]:
+        return {o.strip().rstrip("/") for o in self.admin_origin.split(",") if o.strip()}
 
     @property
     def allowed_sample_rates(self) -> set[int]:

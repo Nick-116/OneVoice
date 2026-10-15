@@ -3,21 +3,21 @@
 ## Server
 - [ ] Ubuntu 24.04 LTS, unattended security upgrades on, SSH key-only login (`PasswordAuthentication no`)
 - [ ] `ufw` allows only SSH inbound
-- [ ] `docker compose ps` shows **no** published ports (no `0.0.0.0:` / `:::` mappings)
+- [ ] `docker compose ps` shows only the ports you intend (8080/8081/8082 on the right addresses)
 - [ ] Provider backups/snapshots enabled
 
 ## Secrets & configuration
 - [ ] `./scripts/generate-secrets.sh` run; `secrets/` is mode 700 and **not** in git
 - [ ] `secrets/` and nightly `backups/` copied off-server
-- [ ] `.env`: real `PUBLIC_BASE_URL`, `ADMIN_ORIGIN`, Newt credentials, `COOKIE_SECURE=true`, `ADMIN_REQUIRE_MFA=true`
+- [ ] `.env`: real `PUBLIC_BASE_URL` and `ADMIN_ORIGIN`; `COOKIE_SECURE=true` if served over HTTPS; `ADMIN_REQUIRE_MFA=true`
 - [ ] Branding set in the dashboard (name, logo, color, fonts)
 
-## Pangolin / DNS
-- [ ] `captions.<domain>`: authentication off (the only public resource)
-- [ ] `admin.<domain>`: Pangolin SSO on, limited to staff
-- [ ] `audio.<domain>`: rules allow only church static IPs, then drop `/*`
-- [ ] `admin` and `audio` DNS records are DNS-only (grey cloud)
-- [ ] From cellular: `POST https://captions.<domain>/api/public/config` → 405; `https://audio.<domain>` unreachable
+## Network / reverse proxy
+- [ ] Ports: `*_BIND` set for your setup (local network `0.0.0.0`; reverse proxy `127.0.0.1`), see [Ports & reverse proxy](REVERSE_PROXY.md)
+- [ ] Caption hostname allows only `/campus/*`, `/assets/*`, `/api/public/*`, `/branding/*`, `/favicon.svg`
+- [ ] Dashboard is private (proxy login/SSO, local network only, or `ADMIN_BIND=127.0.0.1`)
+- [ ] Audio input (only if using the Sender app) is reachable only from the church
+- [ ] From cellular: `POST <caption site>/api/public/config` → 405; dashboard and audio not reachable
 
 ## Application
 - [ ] Setup wizard completed (first admin, MFA, providers); at least two admins exist (lockout protection)

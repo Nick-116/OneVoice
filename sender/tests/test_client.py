@@ -98,7 +98,7 @@ class Harness:
         port = self.server.sockets[0].getsockname()[1]
         defaults = dict(
             url=f"ws://127.0.0.1:{port}/ingest/v1/stream", token=TOKEN,
-            extra_headers={"P-Access-Token": "pangolin-secret"}, initial_backoff=0.05, max_backoff=0.2,
+            extra_headers={"X-Access-Token": "proxy-secret"}, initial_backoff=0.05, max_backoff=0.2,
             auth_backoff=30.0, status_timeout=2.0, open_timeout=2.0,
         )
         defaults.update(self.settings)
@@ -126,7 +126,7 @@ async def test_streams_with_auth_header_query_and_binary_frames():
         assert snap.bytes_sent >= 5 * 3200
     conn = fake.connections[0]
     assert conn["headers"]["Authorization"] == f"Bearer {TOKEN}"
-    assert conn["headers"]["P-Access-Token"] == "pangolin-secret"
+    assert conn["headers"]["X-Access-Token"] == "proxy-secret"
     url = urlsplit(conn["path"])
     assert url.path == "/ingest/v1/stream"
     assert parse_qs(url.query) == {"sample_rate": ["16000"], "channels": ["1"], "format": ["s16le"]}

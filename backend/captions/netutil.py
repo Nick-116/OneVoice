@@ -1,4 +1,4 @@
-"""Client IP resolution behind Pangolin/Newt (and optionally Cloudflare)."""
+"""Client IP resolution, optionally behind trusted reverse proxies."""
 
 from __future__ import annotations
 

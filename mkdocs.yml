@@ -48,13 +48,13 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting started:
-      - Install on a server: DEPLOYMENT.md
+      - Installation: DEPLOYMENT.md
+      - Ports & reverse proxy: REVERSE_PROXY.md
       - Audio input: AUDIO.md
       - Sender app: SENDER.md
       - Updates: UPDATES.md
-  - Security & networking:
+  - Security:
       - Security guide: SECURITY.md
-      - Pangolin setup: PANGOLIN.md
   - Running services:
       - Operations: OPERATIONS.md
       - Production checklist: PRODUCTION_CHECKLIST.md

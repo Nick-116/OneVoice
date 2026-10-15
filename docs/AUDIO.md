@@ -14,11 +14,11 @@ Only one source is used per campus. A campus set to *local* refuses Sender conne
 1. Plug the audio interface into the server and route the speech mix to one of its inputs.
 2. Enable the service in `.env`:
    ```
-   COMPOSE_PROFILES=local-audio          # add ",newt" if you also use the Pangolin tunnel
+   COMPOSE_PROFILES=local-audio
    ```
-3. Start with the local-network overlay, which gives the container access to `/dev/snd`:
+3. Start with the audio overlay, which gives the container access to `/dev/snd`:
    ```bash
-   docker compose -f compose.yml -f compose.local.yml up -d --build
+   docker compose -f compose.yml -f compose.audio.yml up -d --build
    ```
 4. In **Campuses → Edit**:
    - choose **Local input on this server**;

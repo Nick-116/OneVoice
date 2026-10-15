@@ -1,7 +1,7 @@
-"""Private administration API + dashboard (port 8081, Pangolin resource admin.example.com).
+"""Private administration API + dashboard (port 8081).
 
 Every /api route except login/me requires an authenticated, MFA-verified
-session; mutating routes additionally require a CSRF token. Pangolin SSO in
+session; mutating routes additionally require a CSRF token. A reverse-proxy login in
 front of this service is an additional layer, not a replacement.
 """
 

@@ -1,19 +1,18 @@
-# OneVoice - production deployment.
+# OneVoice
 #
 # Start (or update) with:  docker compose up -d --build
 # The OneVoice images are always built locally from this repository (pull_policy: build).
 #
-# Nothing here publishes a port on the host. The only way in is through your
-# Pangolin server via the `newt` tunnel container, which can reach exactly
-# three targets:   public:8080   admin:8081   ingest:8082
+# Three ports are published on the host (set in .env):
+#   8080  caption site for phones   (PUBLIC_PORT, PUBLIC_BIND)
+#   8081  admin dashboard           (ADMIN_PORT,  ADMIN_BIND)
+#   8082  audio input for the Sender app (INGEST_PORT, INGEST_BIND)
+# *_BIND=0.0.0.0  -> reachable on your network (local setup)
+# *_BIND=127.0.0.1 -> only this machine, e.g. for a reverse proxy on the same server
 #
-# Networks (all "internal" except egress = no route to the internet):
-#   public_edge  newt <-> public           admin_edge  newt <-> admin
-#   ingest_edge  newt <-> ingest           redis_net   app services <-> redis
-#   db_net       admin/worker/ingest/migrate <-> postgres
-#   egress       worker (STT/translation APIs), admin (translation test), newt (Pangolin)
-# The public container can reach only Redis (restricted ACL user). It has no
-# database credentials, no route to admin, and no internet access.
+# Networks: postgres and redis sit on internal networks with no route outside.
+# Each published service has its own network, so the caption site cannot reach the
+# dashboard. The caption site has no database credentials (restricted Redis access only).
 
 name: captions
 
@@ -33,10 +32,10 @@ x-app-env: &app-env
   DB_HOST: postgres
   DB_NAME: captions
   REDIS_HOST: redis
-  PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?set PUBLIC_BASE_URL in .env}
-  ADMIN_ORIGIN: ${ADMIN_ORIGIN:?set ADMIN_ORIGIN in .env}
-  TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-1}
-  COOKIE_SECURE: ${COOKIE_SECURE:-true}
+  PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}
+  ADMIN_ORIGIN: ${ADMIN_ORIGIN:-http://localhost:8081}
+  TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-0}
+  COOKIE_SECURE: ${COOKIE_SECURE:-false}
 
 services:
   postgres:
@@ -165,8 +164,8 @@ services:
       REDIS_USER: ingest
       REDIS_PASSWORD_FILE: /run/secrets/redis_ingest_password
     secrets: [db_ingest_password, redis_ingest_password]
-    networks: [ingest_edge, db_net, redis_net]
-    expose: ["8082"]
+    networks: [ingest_net, db_net, redis_net]
+    ports: ["${INGEST_BIND:-0.0.0.0}:${INGEST_PORT:-8082}:8082"]
     depends_on:
       migrate: { condition: service_completed_successfully }
       redis: { condition: service_healthy }
@@ -181,7 +180,7 @@ services:
 
   # Optional: audio input from an interface on THIS server (the default audio source for a campus).
   # Enable with COMPOSE_PROFILES=local-audio (comma-separate with other profiles).
-  # Audio hardware is only reachable from Docker on Linux: compose.local.yml maps /dev/snd.
+  # Audio hardware is only reachable from Docker on Linux: compose.audio.yml maps /dev/snd.
   # LOCAL_AUDIO_TEST_TONE=1 adds a simulated "Test tone" input for trying it without hardware.
   local-audio:
     build:
@@ -217,8 +216,7 @@ services:
     environment:
       <<: *app-env
       COMPONENT: public
-      # Set PUBLIC_TRUSTED_PROXY_HOPS=2 if captions.<domain> is orange-clouded in Cloudflare.
-      TRUSTED_PROXY_HOPS: ${PUBLIC_TRUSTED_PROXY_HOPS:-1}
+      TRUSTED_PROXY_HOPS: ${PUBLIC_TRUSTED_PROXY_HOPS:-${TRUSTED_PROXY_HOPS:-0}}
       REDIS_USER: public
       REDIS_PASSWORD_FILE: /run/secrets/redis_public_password
       PUBLIC_MAX_STREAMS: ${PUBLIC_MAX_STREAMS:-3000}
@@ -226,8 +224,8 @@ services:
     secrets: [redis_public_password]
     volumes:
       - ./branding:/app/branding:ro
-    networks: [public_edge, redis_net]
-    expose: ["8080"]
+    networks: [public_net, redis_net]
+    ports: ["${PUBLIC_BIND:-0.0.0.0}:${PUBLIC_PORT:-8080}:8080"]
     depends_on:
       redis: { condition: service_healthy }
     healthcheck:
@@ -265,8 +263,8 @@ services:
       - ./branding:/app/branding:ro
       # Request/status files shared with the host updater (scripts/updater.py). No Docker access.
       - ./updater:/app/updater
-    networks: [admin_edge, db_net, redis_net, egress]
-    expose: ["8081"]
+    networks: [admin_net, db_net, redis_net, egress]
+    ports: ["${ADMIN_BIND:-0.0.0.0}:${ADMIN_PORT:-8081}:8081"]
     depends_on:
       migrate: { condition: service_completed_successfully }
       redis: { condition: service_healthy }
@@ -279,31 +277,10 @@ services:
       resources:
         limits: { cpus: "0.5", memory: 384M }
 
-  # Pangolin site connector. Create a "Newt" site in your Pangolin dashboard and
-  # put its endpoint/id/secret in .env. Remove this service if Newt runs elsewhere
-  # (then attach that Newt container to the three *_edge networks instead).
-  newt:
-    image: fosrl/newt:${NEWT_VERSION:-latest}
-    # Enabled by COMPOSE_PROFILES=newt in .env (on the VPS). Local dev leaves it off.
-    profiles: ["newt"]
-    restart: unless-stopped
-    security_opt: ["no-new-privileges:true"]
-    environment:
-      PANGOLIN_ENDPOINT: ${PANGOLIN_ENDPOINT:-}
-      NEWT_ID: ${NEWT_ID:-}
-      NEWT_SECRET: ${NEWT_SECRET:-}
-    networks: [public_edge, admin_edge, ingest_edge, egress]
-    deploy:
-      resources:
-        limits: { cpus: "0.5", memory: 128M }
-    logging:
-      driver: json-file
-      options: { max-size: "20m", max-file: "5" }
-
 networks:
-  public_edge: { internal: true }
-  admin_edge: { internal: true }
-  ingest_edge: { internal: true }
+  public_net: {}
+  admin_net: {}
+  ingest_net: {}
   redis_net: { internal: true }
   db_net: { internal: true }
   egress: {}

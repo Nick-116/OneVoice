@@ -1,4 +1,4 @@
-"""Public caption service (port 8080, the ONLY public Pangolin resource).
+"""Public caption service (port 8080, the only part meant to be public).
 
 Strictly read-only:
   * only GET/HEAD are accepted (405 for everything else, before routing),

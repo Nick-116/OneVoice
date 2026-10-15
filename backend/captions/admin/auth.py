@@ -123,7 +123,7 @@ def _check_csrf(request: Request, sess: AdminSession) -> None:
         security_event("csrf_token_mismatch", ip=client_ip(request), path=request.url.path)
         raise HTTPException(403, "CSRF check failed")
     origin = request.headers.get("origin")
-    if origin and origin.rstrip("/") != get_settings().admin_origin.rstrip("/"):
+    if origin and origin.rstrip("/") not in get_settings().admin_origins:
         security_event("csrf_origin_mismatch", ip=client_ip(request), origin=origin)
         raise HTTPException(403, "CSRF origin check failed")
 

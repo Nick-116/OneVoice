@@ -41,7 +41,7 @@ The `sounddevice` wheels for macOS and Windows include PortAudio, so nothing els
 2. Start the app and fill in the following:
    * **Server URL**: `wss://audio.example.com/ingest/v1/stream`
    * **Sender token**: paste the token. The app stores it in the macOS Keychain or the Windows Credential Manager, never in the config file.
-   * **Extra headers** (optional): headers the reverse proxy may require, such as Pangolin resource access-token headers. Their values also go into the keychain.
+   * **Extra headers** (optional): headers the reverse proxy may require, such as an access-token header. Their values also go into the keychain.
    * **Input device** and **Input channel**: see section 3.
    * **Send sample rate**: 16000 is the default and is all speech recognition needs.
    * **Input gain**: a trim from −20 to +20 dB. Aim for speech peaks around −12 to −6 dBFS that never light the **CLIP** indicator.
@@ -140,7 +140,7 @@ Logs (rotating, 5 × 2 MB). The token is never written, and anything token-shape
 | Symptom | Check |
 |---|---|
 | **Authentication failed — check token / IP allowlist** | Re-paste the token, since it is easy to miss a character. In the admin dashboard, check that the sender is not revoked and that its IP allowlist contains the church's current public IP (search "what is my IP" from that computer). After repeated failures, the server blocks the IP for about 5 minutes. |
-| Rejected with HTTP 401/403 even with a correct token | A reverse proxy such as Pangolin may require access-token headers. Add them under **Extra headers**. |
+| Rejected with HTTP 401/403 even with a correct token | A reverse proxy in front of OneVoice may require an access-token header. Add it under **Extra headers**. |
 | **TLS certificate verification failed** | Check the computer's clock and date. A corporate proxy that intercepts TLS won't work. |
 | **No levels at all** (meter shows nothing) | Wrong device, or the device is used exclusively by another app. Click **Refresh**, check the host API, and try WASAPI instead of MME. On macOS, check the microphone permission. |
 | **Digital silence** (meter shows −120 dBFS) | Silence that is *exactly zero* almost always means a **broken Dante subscription**. Open Dante Controller and check that the subscription has a green tick, not a red X, that the clock is locked, and that the sample rate matches. On macOS, also check the microphone permission. |

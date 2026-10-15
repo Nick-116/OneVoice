@@ -45,7 +45,7 @@ sudo python3 scripts/updater.py apply
 ## Local testing on a Mac
 
 ```bash
-UPDATER_COMPOSE_FILES=compose.yml:compose.dev.yml python3 scripts/updater.py watch
+python3 scripts/updater.py watch
 ```
 Leave it running in a terminal. The dashboard at http://localhost:18081/updates will show it as running.
 
