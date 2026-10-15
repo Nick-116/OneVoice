@@ -1,7 +1,7 @@
 ; Inno Setup script for the Windows installer (built in CI: .github/workflows/release.yml).
 #define AppName "OneVoice Sender"
 #ifndef AppVersion
-  #define AppVersion "1.2.0"
+  #define AppVersion "1.2.1"
 #endif
 
 [Setup]

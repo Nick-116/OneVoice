@@ -1,6 +1,6 @@
 "use strict";
 // OneVoice Sender UI. Talks to the Python controller through pywebview's js_api.
-// Opened in a normal browser (no pywebview), it runs an animated preview with
+// Opened in a normal browser as index.html?demo, it runs an animated preview with
 // sample data so the design can be checked without audio hardware.
 
 const $ = (id) => document.getElementById(id);
@@ -285,7 +285,7 @@ function demoApi() {
   let live = true;
   return {
     initial_state: async () => ({
-      app: { name: "OneVoice Sender", version: "1.2.0" },
+      app: { name: "OneVoice Sender", version: "1.2.1" },
       devices: [
         { key: "Core Audio::Dante Virtual Soundcard", name: "Dante Virtual Soundcard", hostapi: "Core Audio", channels: 16, rate: 48000 },
         { key: "Core Audio::MacBook Pro Microphone", name: "MacBook Pro Microphone", hostapi: "Core Audio", channels: 1, rate: 48000 },
@@ -319,13 +319,13 @@ function demoApi() {
   };
 }
 
-window.addEventListener("pywebviewready", () => {
-  api = window.pywebview.api;
+// The preview only runs when asked for (index.html?demo). The desktop app can take
+// several seconds to attach its API, so never fall back to sample data on a timer.
+function start(withApi) {
+  if (api) return;
+  api = withApi;
   init();
-});
-setTimeout(() => {
-  if (!api) {
-    api = demoApi();
-    init();
-  }
-}, 600);
+}
+if (new URLSearchParams(location.search).has("demo")) start(demoApi());
+else if (window.pywebview && window.pywebview.api && window.pywebview.api.initial_state) start(window.pywebview.api);
+else window.addEventListener("pywebviewready", () => start(window.pywebview.api));
