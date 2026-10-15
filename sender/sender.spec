@@ -19,8 +19,9 @@ hiddenimports = (
     + collect_submodules("webview")
     + ["church_sender.webui", "church_sender.controller"]
 )
-if sys.platform == "win32":
-    hiddenimports += ["win32ctypes.core", "clr"]
+# Note: don't force win32ctypes/clr here. Importing win32ctypes early makes it pick its cffi
+# backend, which PyInstaller deliberately blocks on Windows (build fails with
+# "import of cffi halted"). keyring and pywebview's Windows backend pull them in normally.
 
 datas = collect_data_files("certifi") + collect_data_files("webview") + [("church_sender/ui", "church_sender/ui")]
 
