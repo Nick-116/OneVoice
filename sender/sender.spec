@@ -9,7 +9,7 @@ import sys
 
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
-VERSION = os.environ.get("ONEVOICE_VERSION", "1.2.1")
+VERSION = os.environ.get("ONEVOICE_VERSION", "1.3.0")
 NAME = "OneVoiceSender"
 
 hiddenimports = (

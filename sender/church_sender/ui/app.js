@@ -285,7 +285,7 @@ function demoApi() {
   let live = true;
   return {
     initial_state: async () => ({
-      app: { name: "OneVoice Sender", version: "1.2.1" },
+      app: { name: "OneVoice Sender", version: "1.3.0" },
       devices: [
         { key: "Core Audio::Dante Virtual Soundcard", name: "Dante Virtual Soundcard", hostapi: "Core Audio", channels: 16, rate: 48000 },
         { key: "Core Audio::MacBook Pro Microphone", name: "MacBook Pro Microphone", hostapi: "Core Audio", channels: 1, rate: 48000 },
