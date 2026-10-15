@@ -73,7 +73,12 @@ jobs:
       - name: Build DMG
         run: |
           mkdir -p dmg && cp -R "dist/OneVoice Sender.app" dmg/ && ln -s /Applications dmg/Applications
-          hdiutil create -volname "OneVoice Sender" -srcfolder dmg -ov -format UDZO "dist/OneVoiceSender-${ONEVOICE_VERSION}-macOS-${{ matrix.arch }}.dmg"
+          # hdiutil on CI runners intermittently fails with "Resource busy": retry.
+          for i in 1 2 3 4 5; do
+            hdiutil create -volname "OneVoice Sender" -srcfolder dmg -ov -format UDZO "dist/OneVoiceSender-${ONEVOICE_VERSION}-macOS-${{ matrix.arch }}.dmg" && break
+            echo "hdiutil failed (attempt $i), retrying"; sleep $((i * 5))
+            [ "$i" = 5 ] && exit 1
+          done
       - name: Notarize
         if: env.HAS_MAC_CERT == 'true'
         env:
