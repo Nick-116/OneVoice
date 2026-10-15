@@ -13,8 +13,11 @@
 # Networks: postgres and redis sit on internal networks with no route outside.
 # Each published service has its own network, so the caption site cannot reach the
 # dashboard. The caption site has no database credentials (restricted Redis access only).
+#
+# Containers are named onevoice-<service>. CONTAINER_PREFIX / DB_VOLUME (and -p) only matter
+# when running a second, separate copy on the same machine (e.g. for testing).
 
-name: captions
+name: onevoice
 
 x-hardening: &hardening
   read_only: true
@@ -39,6 +42,7 @@ x-app-env: &app-env
 
 services:
   postgres:
+    container_name: ${CONTAINER_PREFIX:-onevoice}-postgres
     image: postgres:16.6-alpine
     restart: unless-stopped
     security_opt: ["no-new-privileges:true"]
@@ -68,6 +72,7 @@ services:
       options: { max-size: "20m", max-file: "5" }
 
   redis:
+    container_name: ${CONTAINER_PREFIX:-onevoice}-redis
     image: redis:7.4.2-alpine
     <<: *hardening
     user: "999:1000"
@@ -86,11 +91,12 @@ services:
         limits: { cpus: "0.5", memory: 320M }
 
   migrate:
+    container_name: ${CONTAINER_PREFIX:-onevoice}-migrate
     build:
       context: .
       target: service
       args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
-    image: captions-service:${IMAGE_TAG:-local}
+    image: onevoice-service:${IMAGE_TAG:-local}
     pull_policy: build  # built from this repository; never pulled from a registry
     <<: *hardening
     restart: "no"
@@ -107,11 +113,12 @@ services:
       postgres: { condition: service_healthy }
 
   worker:
+    container_name: ${CONTAINER_PREFIX:-onevoice}-worker
     build:
       context: .
       target: service
       args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
-    image: captions-service:${IMAGE_TAG:-local}
+    image: onevoice-service:${IMAGE_TAG:-local}
     pull_policy: build  # built from this repository; never pulled from a registry
     <<: *hardening
     command: ["python", "-m", "captions.worker"]
@@ -142,11 +149,12 @@ services:
         limits: { cpus: "1.0", memory: 512M }
 
   ingest:
+    container_name: ${CONTAINER_PREFIX:-onevoice}-ingest
     build:
       context: .
       target: service
       args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
-    image: captions-service:${IMAGE_TAG:-local}
+    image: onevoice-service:${IMAGE_TAG:-local}
     pull_policy: build  # built from this repository; never pulled from a registry
     <<: *hardening
     command:
@@ -186,11 +194,12 @@ services:
   # Audio hardware is only reachable from Docker on Linux: compose.audio.yml maps /dev/snd.
   # LOCAL_AUDIO_TEST_TONE=1 adds a simulated "Test tone" input for trying it without hardware.
   local-audio:
+    container_name: ${CONTAINER_PREFIX:-onevoice}-local-audio
     build:
       context: .
       target: localaudio
       args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
-    image: captions-localaudio:${IMAGE_TAG:-local}
+    image: onevoice-localaudio:${IMAGE_TAG:-local}
     pull_policy: build  # built from this repository; never pulled from a registry
     profiles: ["local-audio"]
     <<: *hardening
@@ -209,11 +218,12 @@ services:
         limits: { cpus: "0.5", memory: 256M }
 
   public:
+    container_name: ${CONTAINER_PREFIX:-onevoice}-public
     build:
       context: .
       target: public
       args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
-    image: captions-public:${IMAGE_TAG:-local}
+    image: onevoice-public:${IMAGE_TAG:-local}
     pull_policy: build  # built from this repository; never pulled from a registry
     <<: *hardening
     environment:
@@ -243,11 +253,12 @@ services:
         limits: { cpus: "1.0", memory: 384M }
 
   admin:
+    container_name: ${CONTAINER_PREFIX:-onevoice}-admin
     build:
       context: .
       target: admin
       args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
-    image: captions-admin:${IMAGE_TAG:-local}
+    image: onevoice-admin:${IMAGE_TAG:-local}
     pull_policy: build  # built from this repository; never pulled from a registry
     <<: *hardening
     environment:
@@ -289,7 +300,9 @@ networks:
   egress: {}
 
 volumes:
-  pgdata: {}
+  pgdata:
+    # Fixed name so the database survives the project rename (it was created as "captions_pgdata").
+    name: ${DB_VOLUME:-captions_pgdata}
 
 secrets:
   app_secret_key: { file: ./secrets/app_secret_key }

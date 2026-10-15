@@ -1,7 +1,7 @@
 # Backend test environment: real PostgreSQL + Redis, no secrets, no network exposure.
 #   docker compose -f compose.test.yml run --rm --build tests
 #   docker compose -f compose.test.yml down -v
-name: captions-test
+name: onevoice-test
 
 services:
   postgres:

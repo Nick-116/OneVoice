@@ -181,12 +181,42 @@ def wait_healthy() -> None:
     raise RuntimeError(f"services not healthy within {HEALTH_TIMEOUT}s")
 
 
+PROJECT_NAMES = ("onevoice", "captions")  # the Compose project was called "captions" before 1.4
+
+
+def retire_other_projects(env: dict) -> None:
+    """Remove containers/networks of OneVoice's other project name so ports don't clash.
+
+    Only containers and networks: the database volume has a fixed name and is kept.
+    """
+    out = subprocess.run(compose("config", "--format", "json"), cwd=REPO, env=env, capture_output=True, text=True)
+    try:
+        current = json.loads(out.stdout)["name"]
+    except (ValueError, KeyError):
+        return
+    for name in PROJECT_NAMES:
+        if name == current:
+            continue
+        label = f"label=com.docker.compose.project={name}"
+        ids = subprocess.run(["docker", "ps", "-aq", "--filter", label], capture_output=True, text=True).stdout.split()
+        if ids:
+            log(f"removing {len(ids)} container(s) from the old '{name}' project (data volume kept)")
+            subprocess.run(["docker", "rm", "-f", *ids], capture_output=True, text=True)
+        nets = subprocess.run(["docker", "network", "ls", "-q", "--filter", label], capture_output=True, text=True).stdout.split()
+        if nets:
+            subprocess.run(["docker", "network", "rm", *nets], capture_output=True, text=True)
+
+
 def deploy(commit: str) -> None:
     env = dict(os.environ, APP_COMMIT=commit, APP_BUILT_AT=now())
     # New versions may need new secret files; the script only creates missing ones.
     if (REPO / "scripts" / "generate-secrets.sh").exists():
         run("bash", "scripts/generate-secrets.sh", check=False)
+    built = False
     for args in (compose("build", "--pull"), compose("up", "-d", "--remove-orphans")):
+        if built:
+            retire_other_projects(env)  # after a successful build, right before starting
+        built = True
         log("$ " + " ".join(args))
         proc = subprocess.run(args, cwd=REPO, env=env, capture_output=True, text=True, timeout=3600)
         for line in (proc.stdout + proc.stderr).strip().splitlines()[-30:]:

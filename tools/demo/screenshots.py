@@ -2,7 +2,8 @@
 """Generate the README screenshots from a throwaway demo stack with example data.
 
     # 1. start an isolated demo copy (separate database/volumes, ports 28080-28082)
-    export PUBLIC_PORT=28080 ADMIN_PORT=28081 INGEST_PORT=28082 \
+    export CONTAINER_PREFIX=onevoice-demo DB_VOLUME=onevoice-demo_pgdata \
+           PUBLIC_PORT=28080 ADMIN_PORT=28081 INGEST_PORT=28082 \
            PUBLIC_BIND=127.0.0.1 ADMIN_BIND=127.0.0.1 INGEST_BIND=127.0.0.1 \
            PUBLIC_BASE_URL=http://localhost:28080 ADMIN_ORIGIN=http://localhost:28081
     docker compose -p onevoice-demo up -d --build
