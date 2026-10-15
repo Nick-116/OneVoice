@@ -241,12 +241,14 @@ services:
   # (then attach that Newt container to the three *_edge networks instead).
   newt:
     image: fosrl/newt:${NEWT_VERSION:-latest}
+    # Enabled by COMPOSE_PROFILES=newt in .env (on the VPS). Local dev leaves it off.
+    profiles: ["newt"]
     restart: unless-stopped
     security_opt: ["no-new-privileges:true"]
     environment:
-      PANGOLIN_ENDPOINT: ${PANGOLIN_ENDPOINT:?set PANGOLIN_ENDPOINT in .env}
-      NEWT_ID: ${NEWT_ID:?set NEWT_ID in .env}
-      NEWT_SECRET: ${NEWT_SECRET:?set NEWT_SECRET in .env}
+      PANGOLIN_ENDPOINT: ${PANGOLIN_ENDPOINT:-}
+      NEWT_ID: ${NEWT_ID:-}
+      NEWT_SECRET: ${NEWT_SECRET:-}
     networks: [public_edge, admin_edge, ingest_edge, egress]
     deploy:
       resources:

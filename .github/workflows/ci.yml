@@ -69,5 +69,4 @@ jobs:
         run: |
           ./scripts/generate-secrets.sh
           cp .env.example .env
-          sed -i 's/^NEWT_ID=.*/NEWT_ID=ci/; s/^NEWT_SECRET=.*/NEWT_SECRET=ci/' .env
           APP_COMMIT=${{ github.sha }} docker compose build
