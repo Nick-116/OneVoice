@@ -50,6 +50,7 @@ The `sounddevice` wheels for macOS and Windows include PortAudio, so nothing els
 5. Tick **Start streaming automatically when the app opens** and **Launch at login**. The computer then streams unattended after a reboot.
 
 Settings are stored in a JSON file in the platform config folder:
+
 * macOS: `~/Library/Application Support/OneVoiceSender/config.json`
 * Windows: `%LOCALAPPDATA%\OneVoice\OneVoiceSender\config.json`
 
@@ -113,6 +114,7 @@ Configure the app once in the GUI on the same user account. The token is read fr
 * **Windows**: the checkbox adds a `OneVoiceSender` value under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. For headless at logon, point a Task Scheduler task ("At log on", "Run only when user is logged on") at `OneVoiceSender-cli.exe --headless`. Configure Windows to auto-login the streaming account.
 
 Logs (rotating, 5 × 2 MB). The token is never written, and anything token-shaped is redacted:
+
 * macOS: `~/Library/Logs/OneVoiceSender/sender.log`
 * Windows: `%LOCALAPPDATA%\OneVoice\OneVoiceSender\Logs\sender.log`
 

@@ -1,0 +1,65 @@
+site_name: OneVoice
+site_description: Live captions and translation for church services, on everyone's phone.
+site_url: https://nick-116.github.io/OneVoice/
+repo_url: https://github.com/Nick-116/OneVoice
+repo_name: Nick-116/OneVoice
+edit_uri: edit/main/docs/
+copyright: OneVoice contributors · MIT License
+
+theme:
+  name: material
+  logo: assets/onevoice-icon.svg
+  favicon: assets/onevoice-icon.svg
+  font: false  # system fonts: no third-party font requests
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: indigo
+      toggle: { icon: material/weather-night, name: Dark mode }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: indigo
+      toggle: { icon: material/weather-sunny, name: Light mode }
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - content.code.copy
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc: { permalink: true }
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.details
+  - mdx_truly_sane_lists: { nested_indent: 2 }
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Install on a server: DEPLOYMENT.md
+      - Audio input: AUDIO.md
+      - Sender app: SENDER.md
+      - Updates: UPDATES.md
+  - Security & networking:
+      - Security guide: SECURITY.md
+      - Pangolin setup: PANGOLIN.md
+  - Running services:
+      - Operations: OPERATIONS.md
+      - Production checklist: PRODUCTION_CHECKLIST.md
+      - Providers, cost & privacy: PROVIDERS_AND_PRIVACY.md
+  - Reference:
+      - Architecture: ARCHITECTURE.md
+      - API: API.md
+      - Testing: TESTING.md

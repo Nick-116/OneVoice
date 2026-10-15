@@ -46,6 +46,9 @@ def campus_json(c: m.Campus) -> dict:
         "enabled": c.enabled,
         "retain_transcripts": c.retain_transcripts,
         "languages": c.language_codes,
+        "audio_source": c.audio_source,
+        "local_device": c.local_device,
+        "local_channel": c.local_channel,
     }
 
 
@@ -177,7 +180,9 @@ async def update_campus(campus_id: int, body: CampusPatch, request: Request, ctx
     langs = data.pop("languages", None)
     await _validate_languages(db, [*(langs or []), *[v for k, v in data.items() if k.endswith("_language") and v]])
     for k, v in data.items():
-        if v is not None:
+        if k == "local_device" and v == "":
+            campus.local_device = None
+        elif v is not None:
             setattr(campus, k, v)
     if langs is not None:
         wanted = set([campus.source_language, *langs])

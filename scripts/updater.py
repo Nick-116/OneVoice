@@ -183,6 +183,9 @@ def wait_healthy() -> None:
 
 def deploy(commit: str) -> None:
     env = dict(os.environ, APP_COMMIT=commit, APP_BUILT_AT=now())
+    # New versions may need new secret files; the script only creates missing ones.
+    if (REPO / "scripts" / "generate-secrets.sh").exists():
+        run("bash", "scripts/generate-secrets.sh", check=False)
     for args in (compose("build", "--pull"), compose("up", "-d", "--remove-orphans")):
         log("$ " + " ".join(args))
         proc = subprocess.run(args, cwd=REPO, env=env, capture_output=True, text=True, timeout=3600)

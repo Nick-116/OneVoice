@@ -181,6 +181,7 @@ function CampusCard({ item, now, defaultMinutes, langs }: { item: OverviewCampus
             {audio.connected && audio.forwarding && <Badge tone="green">forwarding</Badge>}
             {!audio.connected && audio.last_frame_at && <span className="text-xs text-gray-500">last audio {relativeTime(audio.last_frame_at, now)}</span>}
           </div>
+          {audio.local_error && <p className="mb-1.5 text-xs text-red-700">{audio.local_error}</p>}
           <LevelMeter level={audio.level_dbfs} peak={audio.peak_dbfs} active={audio.connected} />
         </div>
 

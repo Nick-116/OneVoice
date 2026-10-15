@@ -14,6 +14,7 @@ import {
   Loading,
   Modal,
   PageHeader,
+  Select,
   Table,
   Td,
   Th,
@@ -21,7 +22,7 @@ import {
 } from '../components/ui';
 import { keys, useAction, useCampuses, useLanguages, useSettings } from '../lib/queries';
 import { formatInZone } from '../lib/time';
-import type { Campus, CampusInput, Language, TranscriptEntry } from '../types';
+import type { Campus, CampusInput, Language, LocalAudioState, TranscriptEntry } from '../types';
 
 const BLANK: CampusInput = {
   slug: '',
@@ -32,7 +33,80 @@ const BLANK: CampusInput = {
   enabled: true,
   retain_transcripts: false,
   languages: ['en', 'es'],
+  audio_source: 'local',
+  local_device: null,
+  local_channel: 1,
 };
+
+function AudioSourceFields({ form, set }: { form: CampusInput; set: <K extends keyof CampusInput>(k: K, v: CampusInput[K]) => void }) {
+  const local = useQuery({ queryKey: ['audio-local'], queryFn: () => api.get<LocalAudioState>('/api/audio/local'), refetchInterval: 5000 });
+  const devices = local.data?.devices ?? [];
+  const device = devices.find((d) => d.name === form.local_device);
+  const channels = device?.channels ?? Math.max(form.local_channel, 1);
+  return (
+    <div className="space-y-3 rounded-md border border-gray-200 p-3 sm:col-span-2">
+      <div className="text-sm font-medium text-gray-700">Audio source</div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {(
+          [
+            ['local', 'Local input on this server', 'An audio interface plugged into the OneVoice server (default).'],
+            ['remote', 'Remote sender app', 'The OneVoice Sender app on a computer at church streams the audio.'],
+          ] as const
+        ).map(([value, title, desc]) => (
+          <label
+            key={value}
+            className={`flex cursor-pointer gap-2 rounded-md border p-2 text-sm ${form.audio_source === value ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'}`}
+          >
+            <input type="radio" name="audio_source" className="mt-1" checked={form.audio_source === value} onChange={() => set('audio_source', value)} />
+            <span>
+              <span className="block font-medium text-gray-900">{title}</span>
+              <span className="block text-xs text-gray-500">{desc}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      {form.audio_source === 'local' ? (
+        <div className="grid gap-3 sm:grid-cols-[2fr_1fr]">
+          <Field
+            label="Input device"
+            hint={
+              local.data && !local.data.online
+                ? 'The local-audio service is not running on this server. Enable it with COMPOSE_PROFILES=local-audio (Linux host with an audio interface), or choose Remote sender app.'
+                : 'Devices found on the server. Dante Virtual Soundcard or a USB interface appears here.'
+            }
+          >
+            {(id) => (
+              <Select id={id} value={form.local_device ?? ''} onChange={(e) => set('local_device', e.target.value || null)}>
+                <option value="">Select a device…</option>
+                {form.local_device && !device && <option value={form.local_device}>{form.local_device} (not connected)</option>}
+                {devices.map((d) => (
+                  <option key={d.name} value={d.name}>
+                    {d.name} · {d.channels} ch
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+          <Field label="Channel" hint="Where the speech mix arrives.">
+            {(id) => (
+              <Select id={id} value={String(form.local_channel)} onChange={(e) => set('local_channel', Number(e.target.value))}>
+                {Array.from({ length: channels }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    Channel {i + 1}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        </div>
+      ) : (
+        <p className="text-xs text-gray-600">
+          After saving, create a sender token under <strong>Audio → Senders</strong> and paste it into the OneVoice Sender app.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function CampusModal({ initial, languages, onClose }: { initial: Campus | null; languages: Language[]; onClose: () => void }) {
   const settings = useSettings();
@@ -96,6 +170,7 @@ function CampusModal({ initial, languages, onClose }: { initial: Campus | null; 
           <div className="mb-1 text-sm font-medium text-gray-700">Enabled languages</div>
           <LanguageChecklist languages={languages} value={form.languages} onChange={(v) => set('languages', v)} locked={[form.source_language]} />
         </div>
+        <AudioSourceFields form={form} set={set} />
         <div className="space-y-2 sm:col-span-2">
           <Toggle checked={form.retain_transcripts} onChange={(v) => set('retain_transcripts', v)} label="Retain transcripts" />
           {form.retain_transcripts && (
@@ -211,6 +286,9 @@ export function CampusesPage() {
                     <div className="flex flex-wrap gap-1">
                       {c.enabled ? <Badge tone="green">Enabled</Badge> : <Badge tone="gray">Disabled</Badge>}
                       {c.retain_transcripts && <Badge tone="amber">Transcripts kept</Badge>}
+                      <Badge tone={c.audio_source === 'local' ? 'blue' : 'gray'}>
+                        {c.audio_source === 'local' ? `Local input${c.local_device ? `: ${c.local_device}` : ''}` : 'Sender app'}
+                      </Badge>
                     </div>
                   </Td>
                   <Td className="whitespace-nowrap text-right">

@@ -77,6 +77,9 @@ class CampusConfig:
     enabled: bool
     retain_transcripts: bool
     languages: list[str]
+    audio_source: str = "local"
+    local_device: str | None = None
+    local_channel: int = 1
 
 
 @dataclass
@@ -160,6 +163,9 @@ async def load_snapshot(session: AsyncSession) -> ConfigSnapshot:
                 enabled=c.enabled,
                 retain_transcripts=c.retain_transcripts,
                 languages=c.language_codes,
+                audio_source=c.audio_source,
+                local_device=c.local_device,
+                local_channel=c.local_channel,
             )
             for c in campuses
         ],

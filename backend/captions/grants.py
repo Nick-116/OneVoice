@@ -21,7 +21,7 @@ BEGIN
   END IF;
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'captions_ingest') THEN
     GRANT SELECT (id, campus_id, name, token_hash, allowed_cidrs, revoked_at) ON audio_senders TO captions_ingest;
-    GRANT SELECT (id, slug, enabled) ON campuses TO captions_ingest;
+    GRANT SELECT (id, slug, enabled, audio_source) ON campuses TO captions_ingest;
   END IF;
 END
 $$;

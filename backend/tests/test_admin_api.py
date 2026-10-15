@@ -241,12 +241,12 @@ async def test_qr_codes_and_providers_and_settings(admin):
     png = await admin.get(f"/api/campuses/{cid}/qr", params={"format": "png"})
     assert png.content[:4] == b"\x89PNG"
     links = (await admin.get("/api/qr-links")).json()
-    assert links[0]["url"] == "https://captions.test/east-windsor"
+    assert links[0]["url"] == "https://captions.test/campus/east-windsor"
 
     r = await admin.put("/api/settings", json={"public_base_url": "https://captions.mychurch.org", "church_name": "Grace"})
     assert r.status_code == 200
     links = (await admin.get("/api/qr-links")).json()
-    assert links[0]["url"] == "https://captions.mychurch.org/east-windsor"
+    assert links[0]["url"] == "https://captions.mychurch.org/campus/east-windsor"
 
     r = await admin.put("/api/providers/translation", json={"provider": "simulated", "settings": {"delay_ms": 0}})
     assert r.status_code == 200

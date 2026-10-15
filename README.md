@@ -16,12 +16,21 @@
 
 ## Why OneVoice exists
 
-OneVoice was designed for a church that wanted a **cheap, simple way to give live captions to members who speak other languages**. Hardware interpretation systems and human interpreters for every language are expensive. OneVoice instead uses the sound board’s speech mix, turns it into text, translates it, and shows it on people’s own phones in their language, live.
+OneVoice was designed for a church that wanted a **cheap, simple way to help congregation members who speak other languages understand the message**. During the live service, it:
 
-* **For the congregation:** scan the campus QR code, choose a language once (it’s remembered), read along. Text is large, adjustable and works in 12 languages out of the box, including right-to-left Arabic.
+1. takes the pastor’s words from the sound board;
+2. turns them into text;
+3. translates that text into each member’s language;
+4. shows it on their own phone, as it’s spoken.
+
+It **translates a live service into many languages at once**, for the people sitting in that service. It doesn’t relay or translate content between campuses. A church with several campuses simply runs a separate, independent caption stream for each one.
+
+Hardware interpretation systems and human interpreters for every language are expensive. OneVoice is the low-cost alternative:
+
+* **For the congregation:** scan the QR code, choose a language once (it’s remembered), read along. Text is large, adjustable and works in 12 languages out of the box, including right-to-left Arabic.
 * **For the church:**
   - It runs on a small server (no GPU) and costs a few dollars of API usage per service.
-  - A web dashboard handles service times, languages, campuses, branding and updates.
+  - A web dashboard handles service times, languages, branding and updates.
 
 ## How it works
 
@@ -32,7 +41,13 @@ OneVoice was designed for a church that wanted a **cheap, simple way to give liv
                                                           └──► phones in the room (live captions, per language)
 ```
 
+**Audio input:** the speech mix reaches OneVoice in one of two ways:
+
+- from an audio interface plugged into the OneVoice server itself (the default, when the server is at the church);
+- from the **OneVoice Sender** app on a church computer (when the server is elsewhere, like a VPS).
+
 **Our setup:**
+
 - The OneVoice server runs on a **VPS** (a small cloud server).
 - The **OneVoice Sender** app runs on a computer on the **church’s local network** and sends the speech mix to the VPS.
 - Phones reach the caption site over the internet with HTTPS.
@@ -43,11 +58,12 @@ OneVoice was designed for a church that wanted a **cheap, simple way to give liv
 |---|---|
 | **VPS + Sender on the church network** (what we use) | Most reliable; phones can use cellular data or Wi-Fi; easy to reach from anywhere. |
 | **Everything on one computer at the church** | No VPS cost. Run the server with Docker on the same Mac/PC as the Sender (or another machine on the network). |
-| **Local network only, plain HTTP** | Simplest. Phones on the church Wi-Fi open `http://<server-ip>:8080/<campus>`. |
+| **Local network only, plain HTTP** | Simplest. Phones on the church Wi-Fi open `http://<server-ip>:8080/campus/<campus>`. |
 | **HTTPS through a reverse proxy** | Recommended whenever it’s reachable from the internet. Works behind Pangolin (guide included), Caddy, Nginx, Traefik or Cloudflare Tunnel. The public site, admin dashboard and audio input are separate ports, so each can be exposed (or not) independently. |
 
 ## Features
 
+- **Two audio sources per campus:** a **local input** on the OneVoice server (the default; for example a USB or Dante interface plugged into it), or the **OneVoice Sender** app on a church computer when the server is a VPS. See [docs/AUDIO.md](docs/AUDIO.md).
 - **Live captions** in the original language (word-by-word) and **translated** captions per sentence, delivered with Server-Sent Events.
 - **Scheduling:**
   - Weekly services, special and holiday services, cancellations.
@@ -55,7 +71,7 @@ OneVoice was designed for a church that wanted a **cheap, simple way to give liv
   - A countdown before the service and a thank-you screen after.
   - Daylight-saving-time correct.
 - **Honest status:** viewers see “Waiting for live captions…” or “The streaming service is currently not connected. Please check with the production team.” Captions never pretend to be live.
-- **Multi-campus:** each campus has its own schedule, audio sender, languages, QR code and stream.
+- **Multiple campuses (optional):** each campus is independent, with its own service times, audio input, languages, QR code and captions. Nothing is shared or translated between campuses.
 - **Pays only for what’s used:**
   - One translation per language, shared by every phone reading it.
   - A language is only translated while someone is reading it. When the last person switches away, it stops about 15 seconds later.
@@ -81,10 +97,12 @@ OneVoice doesn’t run AI models itself. It uses **external speech-to-text and t
 | Testing | Simulated providers (free, no keys) | |
 
 **Typical cost:** 4 services a week of 1.5 hours each, with 3 translated languages:
+
 - Deepgram: about **$12/month**
 - Azure: about **$30–40/month**
 
 **Credits for nonprofits and new accounts:**
+
 - **Microsoft for Nonprofits:** eligible 501(c)(3)s can get **$2,000/year in Azure credits**, which covers translation entirely at this scale.
 - **Deepgram:** new accounts get **$200 of free credit** (well over a year at the usage above). Deepgram doesn’t publish a nonprofit discount, but it’s worth asking their sales team.
 - **Azure Translator** also has a free tier of 2 million characters per month.
@@ -106,6 +124,7 @@ Get the latest from **[Releases](https://github.com/Nick-116/OneVoice/releases/l
 The Sender captures one channel of an audio input, such as Dante Virtual Soundcard, a Dante AVIO USB adapter or any audio interface. It shows a live level meter and sends the audio to your OneVoice server. It reconnects automatically and can start when the computer boots.
 
 **First launch:** the apps aren’t signed with paid Apple/Microsoft certificates yet, so your computer asks once:
+
 - **macOS:** right-click the app → **Open** → **Open**.
 - **Windows:** in the SmartScreen prompt, click **More info → Run anyway**.
 
@@ -124,23 +143,28 @@ docker compose logs admin | grep "setup code"
 ```
 
 Open the admin dashboard and enter the setup code. The wizard walks you through:
+
 1. creating the first admin;
 2. setting up two-factor sign-in;
 3. connecting Deepgram and Azure (or other providers).
 
 Then add campuses, service times and a sender token, and print the QR codes.
 
-* **On one computer / your local network:** `docker compose -f compose.yml -f compose.local.yml up -d --build` publishes the caption site on port 8080, the dashboard on 8081 and the audio input on 8082. Phones on the church Wi-Fi open `http://<computer-ip>:8080/<campus>`. The comments in [compose.local.yml](compose.local.yml) list the `.env` values to set (plain HTTP needs `COOKIE_SECURE=false`).
-* **On a VPS behind a reverse proxy:** keep the ports private and point the proxy at the three services: public site `:8080`, admin `:8081`, audio `:8082`. [docs/PANGOLIN.md](docs/PANGOLIN.md) shows exactly which should be public and which private.
+* **On one computer / your local network:** `docker compose -f compose.yml -f compose.local.yml up -d --build` publishes the caption site on port 8080, the dashboard on 8081 and the audio input on 8082. Phones on the church Wi-Fi open `http://<computer-ip>:8080/campus/<campus>`. The comments in [compose.local.yml](compose.local.yml) list the `.env` values to set (plain HTTP needs `COOKIE_SECURE=false`).
+* **On a VPS behind a reverse proxy:** keep the ports private and point the proxy at the three services: public site `:8080`, admin `:8081`, audio `:8082`. [docs/SECURITY.md](docs/SECURITY.md) has the exact allow-list (only the caption pages public), and [docs/PANGOLIN.md](docs/PANGOLIN.md) has the step-by-step Pangolin setup.
 
 ## Documentation
+
+📖 **Read the docs online: [nick-116.github.io/OneVoice](https://nick-116.github.io/OneVoice/)** (the same pages as `docs/`, with search and dark mode).
 
 | | |
 |---|---|
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Server sizing (no GPU) and step-by-step install |
-| [PANGOLIN.md](docs/PANGOLIN.md) | Reverse proxy setup: what’s public, what’s private |
+| [SECURITY.md](docs/SECURITY.md) | What’s exposed, reverse-proxy allow-list, hardening |
+| [PANGOLIN.md](docs/PANGOLIN.md) | Pangolin reverse proxy setup step by step |
 | [UPDATES.md](docs/UPDATES.md) | One-click updates from GitHub |
 | [PROVIDERS_AND_PRIVACY.md](docs/PROVIDERS_AND_PRIVACY.md) | Providers, pricing, cost controls, privacy |
+| [AUDIO.md](docs/AUDIO.md) | Audio input: local interface on the server, or the Sender app |
 | [OPERATIONS.md](docs/OPERATIONS.md) | Monitoring, backups, troubleshooting |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) / [API.md](docs/API.md) | How it’s built |
 | [TESTING.md](docs/TESTING.md) | Test suites, simulated mode, load testing |

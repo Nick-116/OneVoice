@@ -18,12 +18,9 @@ a half-open stale one immediately.
 
 from __future__ import annotations
 
-import array
 import asyncio
 import json
 import logging
-import math
-import sys
 import time
 import uuid
 from collections import defaultdict, deque
@@ -35,6 +32,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import select
 
 from .. import db, rkeys
+from ..audio_utils import pcm_levels
 from ..config import get_settings
 from ..logging_setup import security_event, setup_logging
 from ..models import AudioSender, Campus
@@ -57,6 +55,7 @@ class SenderAuth:
     campus_id: int
     campus_slug: str
     allowed_cidrs: list[str]
+    audio_source: str = "remote"
 
 
 class AuthFailures:
@@ -76,24 +75,6 @@ class AuthFailures:
 
     def add(self, ip: str) -> None:
         self.events[ip].append(time.monotonic())
-
-
-def pcm_levels(pcm: bytes) -> tuple[float, float, bool]:
-    """Return (rms dBFS, peak dBFS, has_signal) for s16le mono PCM."""
-    samples = array.array("h")
-    samples.frombytes(pcm)
-    if sys.byteorder == "big":
-        samples.byteswap()
-    if not samples:
-        return -120.0, -120.0, False
-    peak = max(abs(min(samples)), abs(max(samples)))
-    # Subsample for RMS: plenty accurate for a meter, cheap on CPU.
-    step = max(1, len(samples) // 400)
-    sub = samples[::step]
-    rms = math.sqrt(sum(s * s for s in sub) / len(sub))
-    to_db = lambda v: 20 * math.log10(v / 32768.0) if v > 0 else -120.0  # noqa: E731
-    # Any non-zero sample counts as signal; true digital silence is exactly zero.
-    return round(to_db(rms), 1), round(to_db(peak), 1), peak > 1
 
 
 class IngestState:
@@ -166,7 +147,7 @@ async def authenticate(token: str) -> SenderAuth | None:
     stmt = (
         select(
             AudioSender.id, AudioSender.name, AudioSender.token_hash, AudioSender.allowed_cidrs,
-            AudioSender.revoked_at, Campus.id, Campus.slug, Campus.enabled,
+            AudioSender.revoked_at, Campus.id, Campus.slug, Campus.enabled, Campus.audio_source,
         )
         .join(Campus, Campus.id == AudioSender.campus_id)
         .where(AudioSender.id == sender_uuid)
@@ -175,9 +156,9 @@ async def authenticate(token: str) -> SenderAuth | None:
         row = (await s.execute(stmt)).first()
     auth: SenderAuth | None = None
     if row is not None:
-        sid, name, token_hash, cidrs, revoked_at, campus_id, slug, enabled = row
+        sid, name, token_hash, cidrs, revoked_at, campus_id, slug, enabled, audio_source = row
         if revoked_at is None and enabled and constant_time_equal(token_hash, sha256_hex(secret)):
-            auth = SenderAuth(str(sid), name, campus_id, slug, list(cidrs or []))
+            auth = SenderAuth(str(sid), name, campus_id, slug, list(cidrs or []), audio_source)
     state.auth_cache[cache_key] = (time.monotonic(), auth, sender_hex)
     return auth
 
@@ -226,6 +207,11 @@ async def stream(ws: WebSocket):
         return
 
     await ws.accept()
+    if auth.audio_source != "remote":
+        # The campus takes audio from the server's own input; never mix in a second source.
+        security_event("ingest_campus_uses_local_audio", ip=ip, sender=auth.sender_id, campus=auth.campus_slug)
+        await ws.close(code=4010, reason="campus uses local audio input")
+        return
     campus_id = auth.campus_id
     previous = state.active.get(campus_id)
     state.active[campus_id] = ws

@@ -1,0 +1,12 @@
+:root {
+  --md-primary-fg-color: #5b21b6;
+  --md-primary-fg-color--light: #7c3aed;
+  --md-primary-fg-color--dark: #4c1d95;
+  --md-accent-fg-color: #6366f1;
+}
+.md-header, .md-tabs {
+  background: linear-gradient(90deg, #4f46e5, #7c3aed 60%, #a21caf);
+}
+.hero { text-align: center; margin: 1.5rem 0 2rem; }
+.hero img { width: 112px; height: 112px; filter: drop-shadow(0 10px 24px rgba(91, 33, 182, 0.35)); }
+.hero p { font-size: 1.15rem; }

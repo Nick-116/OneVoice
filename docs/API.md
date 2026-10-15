@@ -39,6 +39,7 @@ Every other method returns `405`. No cookies, no auth, no writes.
 }
 ```
 Caption states to show the viewer:
+
 * `live` – show captions.
 * `waiting` – audio OK, transcription warming up → "Waiting for live captions…"
 * `disconnected` – no audio reaching the server (or pure digital silence) → "The streaming service is currently not connected. Please check with the production team."
@@ -51,6 +52,7 @@ Use `server_time` to correct the phone's clock: `offset = server_time - Date.now
 Only while `phase == "live"`, otherwise `409` with the status JSON body. `404` if language not offered. `429/503` when connection limits are hit (retry with backoff).
 
 Events (each `data:` is one JSON line):
+
 * `event: status` – the status object above. Sent first, and whenever it changes. If `phase != "live"` the server then closes the stream; the client should show the ended/upcoming screen and resume polling.
 * `event: backlog` – JSON array of recent final caption messages (oldest first) so a late joiner has context.
 * `event: caption` – a caption message:
@@ -125,6 +127,7 @@ Roles: `admin` (everything) and `operator` (view + live controls: start/stop/ext
 
 ### Campuses (**admin** for writes)
 `campus` = `{id, slug, name, timezone, source_language, default_language, enabled, retain_transcripts, languages:[codes]}`
+
 * `GET /api/campuses`
 * `POST /api/campuses` body `{slug, name, timezone?, source_language?, default_language?, enabled?, retain_transcripts?, languages?}`
 * `PATCH /api/campuses/{id}` any subset
@@ -137,9 +140,11 @@ Roles: `admin` (everything) and `operator` (view + live controls: start/stop/ext
 
 ### Schedules (**admin** for writes)
 `schedule` = `{id, campus_id, name, weekday (0=Mon…6=Sun), start_time "HH:MM", end_time "HH:MM", timezone, enabled, early_access_minutes, languages: null|[codes], valid_from: null|"YYYY-MM-DD", valid_until}`
+
 * `GET /api/schedules?campus_id=` · `POST /api/schedules` · `PATCH /api/schedules/{id}` · `DELETE /api/schedules/{id}`
 
 `event` (one-time / holiday / manual) = `{id, campus_id, name, kind, start_at, end_at, early_access_minutes, cancelled, languages}`
+
 * `GET /api/events?campus_id=&include_past=false` · `POST /api/events` (`kind` special|holiday; `start_at`/`end_at` must include offset) · `PATCH /api/events/{id}` · `DELETE /api/events/{id}`
 
 Occurrence exceptions (operators allowed): `POST /api/occurrences/cancel {key}` · `POST /api/occurrences/restore {key}`

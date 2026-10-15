@@ -17,3 +17,4 @@ updater/
 *.key
 .env.*
 !.env.example
+docs/SENDER.md

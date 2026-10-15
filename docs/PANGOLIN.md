@@ -48,13 +48,7 @@ Enable **SSL** on all three (Pangolin issues Let's Encrypt certificates).
   - The container has no database credentials.
   - Its Redis user can only read public keys.
   - It contains no admin routes.
-* Optional hardening rules (Resource → Rules), in priority order:
-  1. `Path` `/api/public/*` → **Allow**
-  2. `Path` `/branding/*` → **Allow**
-  3. `Path` `/assets/*` → **Allow**
-  4. `Path` `/*` → **Allow** (the single-page app)
-
-  You don't need any rules for safety; the app is already locked down.
+* **Recommended: allow only the caption pages.** Turn authentication on and add *Allow* rules for `/campus/*`, `/assets/*`, `/api/public/*`, `/branding/*` and `/favicon.svg`. Everything else then requires a Pangolin login. See the exact table and reasoning in [SECURITY.md](SECURITY.md). With only `/campus/*` allowed, the page would load blank, because it also needs its scripts, API and logo.
 
 ### Admin: `admin.example.com`
 * Authentication: **on**. Under Users & Roles, allow only your production staff.
@@ -65,6 +59,7 @@ Enable **SSL** on all three (Pangolin issues Let's Encrypt certificates).
 
 ### Audio ingest: `audio.example.com`
 The desktop sender can't complete an SSO login, so lock this resource to your campuses' static IPs:
+
 * Authentication: **on**.
 * Rules (enable rules, in this priority order):
   1. `CIDR` `203.0.113.10/32` (East Hartford public IP) → **Allow** (bypasses SSO)
@@ -82,6 +77,7 @@ The desktop sender can't complete an SSO login, so lock this resource to your ca
 | `audio` | A/CNAME | Pangolin server | **DNS-only** (otherwise Pangolin sees Cloudflare IPs and the IP allowlist fails) |
 
 If you turn on Cloudflare proxying (orange cloud) for `captions`:
+
 * Set `PUBLIC_TRUSTED_PROXY_HOPS=2` in `.env`, so rate limits use the real phone IP instead of Cloudflare's.
 * SSE works through Cloudflare. The 15-second keepalive stays well under Cloudflare's 100-second idle timeout.
 
@@ -89,7 +85,7 @@ If you turn on Cloudflare proxying (orange cloud) for `captions`:
 
 From a phone on cellular (outside the church):
 ```bash
-curl -I https://captions.example.com/                       # 200
+curl -I https://captions.example.com/campus/<campus>        # 200
 curl -X POST https://captions.example.com/api/public/config  # 405
 curl -I https://captions.example.com/api/overview           # 404 (admin API does not exist here)
 curl -I https://admin.example.com/                          # Pangolin login page / 302

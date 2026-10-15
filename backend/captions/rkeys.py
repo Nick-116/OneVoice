@@ -5,6 +5,7 @@ only to the key/channel prefixes it needs; keep the two in sync.
 
 public-web may only touch: public:*  capbuf:*  viewers:*  and channels cap:* status:*
 ingest     may only touch: audio:*   ingest:*  campus:live:*
+localaudio may only touch: audio:*   localaudio:*  campus:live:*
 """
 
 # Published by worker, read by public-web
@@ -55,6 +56,11 @@ def campus_live_flag(campus_id: int) -> str:
 
 
 INGEST_REVOKED_CHANNEL = "ingest:revoked"  # admin -> ingest: drop a sender now
+
+# Local audio input on the server (worker -> local-audio service -> admin)
+LOCALAUDIO_CONFIG = "localaudio:config"  # JSON [{campus_id, slug, device, channel}] written by worker
+LOCALAUDIO_DEVICES = "localaudio:devices"  # JSON [{name, hostapi, channels, rate}] written by local-audio
+LOCALAUDIO_HEARTBEAT = "localaudio:heartbeat"
 
 # Worker/admin internal
 CONFIG_CHANGED_CHANNEL = "config:changed"

@@ -64,6 +64,7 @@ docker compose logs admin | grep "setup code"
 ```
 
 Open `https://admin.example.com` (Pangolin SSO comes first, then OneVoice) and follow the setup wizard:
+
 1. Enter the **setup code** and create the first administrator.
 2. Scan the QR code with an authenticator app (two-factor sign-in).
 3. Enter the church name.

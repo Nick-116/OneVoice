@@ -11,6 +11,7 @@
 You switch providers in **Admin → Providers & Settings** without a redeploy.
 
 Adding a provider (including a self-hosted model later, such as Whisper or NLLB on a GPU box) means:
+
 * writing one class in `backend/captions/providers/stt/` or `providers/translate/`, implementing `STTProvider`/`STTSession` or `TranslationProvider`;
 * registering it in that package's `__init__.py`;
 * adding its default settings to `config_store.py`.

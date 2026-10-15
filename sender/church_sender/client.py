@@ -34,6 +34,7 @@ AUTH_FAILED_MSG = "Authentication failed — check token / IP allowlist"
 REVOKED_MSG = "This sender was revoked"
 REPLACED_MSG = "Replaced by another sender for this campus (is a second computer streaming?)"
 NO_AUDIO_MSG = "No audio from the input device"
+LOCAL_SOURCE_MSG = "This campus is set to use the server's own audio input. To use this app, set the campus audio source to Remote in the admin dashboard."
 
 
 class LinkState(str, Enum):
@@ -382,6 +383,9 @@ class SenderClient:
         if code == 4009:
             self._link_warning = REPLACED_MSG
             return _Outcome("error", REPLACED_MSG, duration)
+        if code == 4010:
+            # Same long back-off as a policy rejection: retrying quickly can't help until an admin changes it.
+            return _Outcome("policy", LOCAL_SOURCE_MSG, duration)
         if code == 4008:
             return _Outcome("error", "Server closed the link: no audio received for 15 s", duration)
         if code == 1009:

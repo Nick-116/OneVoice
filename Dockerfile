@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1.7
-# One Dockerfile, three runtime targets:
+# One Dockerfile, four runtime targets:
 #   public  - public caption site + read-only API (no admin code paths reachable, no DB creds)
 #   admin   - admin dashboard + API
 #   service - ingest, worker and migrations (no frontend assets)
+#   localaudio - optional capture from the server's own audio interface
 
 ARG PYTHON_IMAGE=python:3.12-slim-bookworm
 ARG NODE_IMAGE=node:22-alpine
@@ -44,6 +45,15 @@ USER 10001:10001
 
 FROM base AS service
 CMD ["python", "-m", "captions.worker"]
+
+# Optional: capture from an audio interface on the server (Linux hosts; needs /dev/snd).
+FROM base AS localaudio
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends libportaudio2 && rm -rf /var/lib/apt/lists/*
+COPY backend/requirements-localaudio.txt ./
+RUN pip install -r requirements-localaudio.txt
+USER 10001:10001
+CMD ["python", "-m", "captions.localaudio"]
 
 FROM base AS public
 COPY --from=public-build /src/dist /app/static

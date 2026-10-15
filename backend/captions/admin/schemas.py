@@ -12,7 +12,7 @@ from pydantic import AfterValidator, BaseModel, Field, field_validator, model_va
 
 SLUG_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$")
 LANG_RE = re.compile(r"^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$")
-RESERVED_SLUGS = {"api", "assets", "branding", "healthz", "static", "admin", "favicon.ico", "robots.txt"}
+RESERVED_SLUGS = {"api", "assets", "branding", "campus", "healthz", "static", "admin", "favicon.ico", "favicon.svg", "robots.txt"}
 
 
 def _tz(v: str) -> str:
@@ -66,6 +66,9 @@ class CampusIn(Strict):
     enabled: bool = True
     retain_transcripts: bool = False
     languages: LangList = Field(default_factory=lambda: ["en", "es"])
+    audio_source: Literal["local", "remote"] = "local"
+    local_device: str | None = Field(default=None, max_length=200)
+    local_channel: int = Field(default=1, ge=1, le=64)
 
     @field_validator("slug")
     @classmethod
@@ -86,6 +89,9 @@ class CampusPatch(Strict):
     enabled: bool | None = None
     retain_transcripts: bool | None = None
     languages: OptLangList = None
+    audio_source: Literal["local", "remote"] | None = None
+    local_device: str | None = Field(default=None, max_length=200)
+    local_channel: int | None = Field(default=None, ge=1, le=64)
 
     @field_validator("slug")
     @classmethod

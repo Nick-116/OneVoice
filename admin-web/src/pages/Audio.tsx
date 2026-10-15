@@ -44,15 +44,17 @@ function AudioCard({ item, now }: { item: AudioCampus; now: number }) {
       }
       actions={
         <>
+          <Badge tone={campus.audio_source === 'local' ? 'blue' : 'gray'}>{campus.audio_source === 'local' ? 'Local input' : 'Sender app'}</Badge>
           {audio.connected ? <Badge tone="green">Connected</Badge> : <Badge tone="red">Disconnected</Badge>}
           {audio.connected && (audio.forwarding ? <Badge tone="green">Forwarding to STT</Badge> : <Badge tone="gray">Meter only (no service)</Badge>)}
         </>
       }
     >
+      {audio.local_error && <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">{audio.local_error}</p>}
       <LevelMeter level={audio.level_dbfs} peak={audio.peak_dbfs} active={audio.connected} />
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
         <div>
-          <dt className="text-xs text-gray-500">Sender</dt>
+          <dt className="text-xs text-gray-500">Source</dt>
           <dd>{audio.sender_name ?? '—'}</dd>
         </div>
         <div>

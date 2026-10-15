@@ -227,6 +227,7 @@ class Supervisor:
                 "service": status["service"],
                 "next": status["next"],
                 "viewers": self.viewers.get(campus.slug, {}),
+                "audio_source": campus.audio_source,
                 "pipeline": pipeline.status() if pipeline else None,
                 "stt_provider": self.stt.name,
                 "stt_configured": self.stt.configured(),
@@ -240,6 +241,12 @@ class Supervisor:
             if cid not in seen:
                 await self.stop_pipeline(cid)
 
+        local_inputs = [
+            {"campus_id": c.id, "slug": c.slug, "device": c.local_device, "channel": c.local_channel}
+            for c in self.snapshot.campuses
+            if c.enabled and c.audio_source == "local"
+        ]
+        await self.r.set(rkeys.LOCALAUDIO_CONFIG, json.dumps(local_inputs), ex=60)
         await self.r.set(rkeys.PUBLIC_CAMPUSES, json.dumps(public_campuses), ex=120)
         branding = {
             "church_name": g["church_name"],

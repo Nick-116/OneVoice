@@ -105,6 +105,7 @@ async def make_campus(slug: str = "east-hartford", languages=("en", "es", "fr"),
     from captions import models as m
 
     async with db.sessionmaker()() as s:
+        kw.setdefault("audio_source", "remote")  # most tests drive audio through the sender/ingest path
         c = m.Campus(slug=slug, name=kw.pop("name", slug.replace("-", " ").title()), **kw)
         c.languages = [m.CampusLanguage(language_code=code) for code in languages]
         s.add(c)

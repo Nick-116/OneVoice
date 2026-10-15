@@ -29,6 +29,7 @@
 ## Why Redis
 
 The public, ingest, worker and admin services are separate processes in separate containers, so they need a message bus. Redis gives:
+
 * pub/sub for captions and status (fan-out without touching PostgreSQL);
 * streams with `MAXLEN` for the bounded audio buffer between ingest and worker (about 30 s maximum, so there's never a long backlog);
 * small TTL keys for live status and viewer counts.

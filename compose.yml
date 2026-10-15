@@ -67,7 +67,7 @@ services:
     <<: *hardening
     user: "999:1000"
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
-    secrets: [redis_worker_password, redis_admin_password, redis_ingest_password, redis_public_password]
+    secrets: [redis_worker_password, redis_admin_password, redis_ingest_password, redis_public_password, redis_localaudio_password]
     volumes:
       - ./deploy/redis/entrypoint.sh:/entrypoint.sh:ro
     networks: [redis_net]
@@ -161,6 +161,32 @@ services:
       interval: 15s
       timeout: 5s
       retries: 3
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 256M }
+
+  # Optional: audio input from an interface on THIS server (the default audio source for a campus).
+  # Enable with COMPOSE_PROFILES=local-audio (comma-separate with other profiles).
+  # Audio hardware is only reachable from Docker on Linux: compose.local.yml maps /dev/snd.
+  # LOCAL_AUDIO_TEST_TONE=1 adds a simulated "Test tone" input for trying it without hardware.
+  local-audio:
+    build:
+      context: .
+      target: localaudio
+      args: { APP_COMMIT: "${APP_COMMIT:-unknown}", APP_BUILT_AT: "${APP_BUILT_AT:-}" }
+    image: captions-localaudio:${IMAGE_TAG:-local}
+    profiles: ["local-audio"]
+    <<: *hardening
+    environment:
+      <<: *app-env
+      COMPONENT: local-audio
+      REDIS_USER: localaudio
+      REDIS_PASSWORD_FILE: /run/secrets/redis_localaudio_password
+      LOCAL_AUDIO_TEST_TONE: ${LOCAL_AUDIO_TEST_TONE:-0}
+    secrets: [redis_localaudio_password]
+    networks: [redis_net]
+    depends_on:
+      redis: { condition: service_healthy }
     deploy:
       resources:
         limits: { cpus: "0.5", memory: 256M }
@@ -278,5 +304,6 @@ secrets:
   redis_admin_password: { file: ./secrets/redis_admin_password }
   redis_ingest_password: { file: ./secrets/redis_ingest_password }
   redis_public_password: { file: ./secrets/redis_public_password }
+  redis_localaudio_password: { file: ./secrets/redis_localaudio_password }
   deepgram_api_key: { file: ./secrets/deepgram_api_key }
   azure_translator_key: { file: ./secrets/azure_translator_key }

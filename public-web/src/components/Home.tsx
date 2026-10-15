@@ -48,7 +48,7 @@ export function Home({ onSingleCampus }: { onSingleCampus: (slug: string) => voi
             {campuses.map((c) => (
               <li key={c.slug}>
                 <a
-                  href={`/${encodeURIComponent(c.slug)}`}
+                  href={`/campus/${encodeURIComponent(c.slug)}`}
                   className="flex min-h-14 items-center justify-between rounded-2xl border-2 border-gray-200 px-5 py-3 text-xl font-medium text-gray-900 hover:border-brand-600 hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/60"
                 >
                   <span>{c.name}</span>

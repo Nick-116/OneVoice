@@ -3,7 +3,8 @@
 # Phones on the same Wi-Fi open http://<this-computer's-IP>:8080/<campus>
 # The Sender connects to ws://<this-computer's-IP>:8082/ingest/v1/stream
 # In .env set: PUBLIC_BASE_URL=http://<IP>:8080  ADMIN_ORIGIN=http://<IP>:8081  COOKIE_SECURE=false
-#              TRUSTED_PROXY_HOPS=0  PUBLIC_TRUSTED_PROXY_HOPS=0  (and remove COMPOSE_PROFILES=newt)
+#              TRUSTED_PROXY_HOPS=0  PUBLIC_TRUSTED_PROXY_HOPS=0  COMPOSE_PROFILES=local-audio
+#              (local audio input from this computer's audio interface; Linux only)
 # Restrict the admin port with your firewall if guests share this network
 # (set ADMIN_BIND=127.0.0.1 to allow the dashboard only on this computer).
 services:
@@ -15,6 +16,10 @@ services:
   ingest:
     ports: ["${INGEST_BIND:-0.0.0.0}:${INGEST_PORT:-8082}:8082"]
     networks: [ingest_edge, db_net, redis_net, lan]
+  # Local audio input (enable with COMPOSE_PROFILES=local-audio). Linux hosts only.
+  local-audio:
+    devices: ["/dev/snd:/dev/snd"]
+    group_add: ["audio"]
 
 networks:
   # The edge networks are internal (no host access); publishing ports needs a normal bridge.

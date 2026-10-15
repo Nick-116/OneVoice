@@ -38,6 +38,24 @@ export interface Campus {
   enabled: boolean;
   retain_transcripts: boolean;
   languages: string[];
+  audio_source: AudioSource;
+  local_device: string | null;
+  local_channel: number;
+}
+
+/** "local" = audio interface on the OneVoice server; "remote" = OneVoice Sender app. */
+export type AudioSource = 'local' | 'remote';
+
+export interface LocalAudioDevice {
+  name: string;
+  hostapi: string;
+  channels: number;
+  rate: number;
+}
+
+export interface LocalAudioState {
+  online: boolean;
+  devices: LocalAudioDevice[];
 }
 
 export interface CampusInput {
@@ -49,6 +67,9 @@ export interface CampusInput {
   enabled: boolean;
   retain_transcripts: boolean;
   languages: string[];
+  audio_source: AudioSource;
+  local_device: string | null;
+  local_channel: number;
 }
 
 export type Phase = 'live' | 'upcoming' | 'ended' | 'idle';
@@ -123,6 +144,8 @@ export interface AudioStatus {
   format: string | null;
   forwarding: boolean;
   bytes: number | null;
+  source?: AudioSource | null;
+  local_error?: string | null;
 }
 
 export interface ErrorEntry {

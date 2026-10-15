@@ -14,6 +14,7 @@ user worker on >$(pw redis_worker_password) ~* &* +@all -@admin -@dangerous +inf
 user admin on >$(pw redis_admin_password) ~* &* +@read +@write +@pubsub +@connection +@keyspace +@transaction -@admin -@dangerous -flushall -flushdb -keys
 user ingest on >$(pw redis_ingest_password) resetchannels &ingest:* ~audio:* ~campus:live:* -@all +@connection +xadd +hset +hgetall +expire +del +lpush +ltrim +get +subscribe +unsubscribe
 user public on >$(pw redis_public_password) resetchannels &cap:* &status:* ~public:* ~capbuf:* ~viewers:* -@all +@connection +get +lrange +hset +expire +del +psubscribe +punsubscribe
+user localaudio on >$(pw redis_localaudio_password) resetchannels ~audio:* ~localaudio:* ~campus:live:* -@all +@connection +xadd +hset +hdel +expire +lpush +ltrim +get +set
 EOF
 
 exec redis-server \

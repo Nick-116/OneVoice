@@ -75,6 +75,8 @@ async def _audio_status(redis, campus_id: int) -> dict:
         "format": f"{st.get('format', 's16le')} mono" if st else None,
         "forwarding": st.get("live") == "1",
         "bytes": _num(st.get("bytes"), int),
+        "source": st.get("source") or ("remote" if st else None),
+        "local_error": st.get("local_error"),
     }
 
 
@@ -132,6 +134,17 @@ async def audio(ctx: AuthContext = Depends(require_user), db: AsyncSession = Dep
         history = [json.loads(h) for h in await redis.lrange(rkeys.audio_history(c.id), 0, 49)]
         out.append({"campus": campus_json(c), "audio": await _audio_status(redis, c.id), "history": history})
     return out
+
+
+@router.get("/audio/local")
+async def local_audio(ctx: AuthContext = Depends(require_user), redis=Depends(get_redis)):
+    """Audio inputs on the OneVoice server itself, as seen by the local-audio service."""
+    hb = _num(await redis.get(rkeys.LOCALAUDIO_HEARTBEAT))
+    raw = await redis.get(rkeys.LOCALAUDIO_DEVICES)
+    return {
+        "online": hb is not None and time.time() - hb < 15,
+        "devices": json.loads(raw) if raw else [],
+    }
 
 
 # ---------------------------------------------------------------- senders
@@ -219,7 +232,7 @@ async def campus_qr(campus_id: int, format: str = "svg", scale: int = 12, ctx: A
     campus = await db.get(m.Campus, campus_id)
     if not campus:
         raise HTTPException(404, "Campus not found")
-    url = f"{await _public_base(db)}/{campus.slug}"
+    url = f"{await _public_base(db)}/campus/{campus.slug}"
     qr = segno.make(url, error="h")  # high error correction survives printing/scuffs
     scale = max(2, min(scale, 40))
     buf = io.BytesIO()
@@ -240,7 +253,7 @@ async def campus_qr(campus_id: int, format: str = "svg", scale: int = 12, ctx: A
 async def qr_links(ctx: AuthContext = Depends(require_user), db: AsyncSession = Depends(get_db)):
     base = await _public_base(db)
     campuses = (await db.execute(select(m.Campus).order_by(m.Campus.name))).scalars().all()
-    return [{"campus_id": c.id, "slug": c.slug, "name": c.name, "url": f"{base}/{c.slug}"} for c in campuses]
+    return [{"campus_id": c.id, "slug": c.slug, "name": c.name, "url": f"{base}/campus/{c.slug}"} for c in campuses]
 
 
 # ---------------------------------------------------------------- languages

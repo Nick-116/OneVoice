@@ -15,7 +15,7 @@ gen() {
 }
 
 for name in app_secret_key db_superuser_password db_admin_password db_worker_password db_ingest_password \
-            redis_worker_password redis_admin_password redis_ingest_password redis_public_password; do
+            redis_worker_password redis_admin_password redis_ingest_password redis_public_password redis_localaudio_password; do
   gen "$name"
 done
 

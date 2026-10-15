@@ -5,9 +5,14 @@ import { NotFound } from "./components/NotFound";
 
 const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
 
-function slugFromPath(path: string): string | null | undefined {
-  const parts = path.split("/").filter(Boolean);
+/** Campus pages live at /campus/<slug> (canonical, used by QR codes); /<slug> still works. */
+export function slugFromPath(path: string): string | null | undefined {
+  let parts = path.split("/").filter(Boolean);
   if (parts.length === 0) return null;
+  if (parts[0] === "campus") {
+    if (parts.length !== 2) return parts.length === 1 ? null : undefined;
+    parts = parts.slice(1);
+  }
   if (parts.length > 1) return undefined;
   let slug: string;
   try {
@@ -28,7 +33,7 @@ export function App() {
   }, []);
 
   const goToCampus = useCallback((slug: string) => {
-    const next = `/${encodeURIComponent(slug)}`;
+    const next = `/campus/${encodeURIComponent(slug)}`;
     window.history.replaceState(null, "", next);
     setPath(next);
   }, []);

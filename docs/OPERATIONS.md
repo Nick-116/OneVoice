@@ -27,6 +27,7 @@ All containers restart automatically (`unless-stopped`) and have health checks. 
 * **Latency:** STT final p95 under about 1.5 s and end-to-end under about 4 s is healthy.
 
 Controls:
+
 * **Start service now** for unscheduled events.
 * **Extend +15/+30** when a service runs long.
 * **Stop service** to end early. Phones switch to the ended screen immediately.
@@ -62,6 +63,7 @@ Restore:
 ## Updating
 
 Use **Admin → Updates** (see [UPDATES.md](UPDATES.md)). It:
+
 1. backs up the database;
 2. pulls the latest `main` from GitHub;
 3. rebuilds and restarts;
