@@ -203,7 +203,7 @@ def upgrade() -> None:
         ],
     )
 
-    # Least-privilege grants. Roles are created by deploy/postgres/init-roles.sh;
+    # Least-privilege grants. Roles are created by deploy/postgres/sync-roles.sh;
     # the SQL is a no-op in environments without them (tests).
     op.execute(
         """

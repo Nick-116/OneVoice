@@ -86,4 +86,5 @@ sudo python3 scripts/updater.py apply
 | One language missing on phones | Disabled in Languages, not enabled for that campus, or not supported by the current translation provider. |
 | Phones show countdown during the service | Schedule time zone / weekday wrong, or the occurrence was cancelled. Check Services → Upcoming. Use **Start service now** as a fallback. |
 | Admin login loops | `ADMIN_ORIGIN` must exactly match the dashboard address in the browser (several can be listed, comma-separated). `COOKIE_SECURE=true` only works over HTTPS; use `false` for plain `http://`. |
+| `migrate` fails with *password authentication failed* | Fixed automatically on the next start: the database syncs its passwords from `secrets/` every time it starts. Run `docker compose up -d` again, and check `docker compose logs postgres` for *roles synced*. |
 | Locked out of MFA | `docker compose run --rm admin python -m captions.admin.cli reset-mfa --username NAME` |
