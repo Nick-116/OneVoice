@@ -7,7 +7,7 @@ from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import models as m
-from ..branding import MAX_LOGO_UPLOAD_BYTES, LogoError, build_palette, contrast_ratio, normalize_logo
+from ..branding import FONTS, MAX_LOGO_UPLOAD_BYTES, LogoError, build_palette, contrast_ratio, normalize_logo
 from ..config_store import load_general
 from ..netutil import client_ip
 from .auth import AuthContext, require_admin, require_user
@@ -24,6 +24,9 @@ async def _branding(db: AsyncSession) -> dict:
     return {
         "church_name": general["church_name"],
         "accent_color": general["accent_color"],
+        "body_font": general["body_font"],
+        "name_font": general["name_font"],
+        "fonts": FONTS,
         "palette": palette,
         "contrast": {shade: round(contrast_ratio(palette[shade], "#FFFFFF"), 2) for shade in ("500", "600", "700", "800")},
         "logo": {"sha256": logo.sha256, "updated_at": logo.updated_at.isoformat() if logo.updated_at else None,

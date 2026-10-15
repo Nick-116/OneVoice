@@ -57,20 +57,24 @@ docker compose up -d
 docker compose ps        # all services "healthy"; migrate "exited (0)"
 ```
 
-## 4. Create the first administrator
+## 4. First-run setup
 
 ```bash
-docker compose run --rm admin python -m captions.admin.cli create-user --username yourname --role admin
+docker compose logs admin | grep "setup code"
 ```
 
-Then:
-1. Open `https://admin.example.com`. Pangolin SSO comes first, then the app login.
-2. Scan the QR code with an authenticator app to enrol MFA.
+Open `https://admin.example.com` (Pangolin SSO comes first, then OneVoice) and follow the setup wizard:
+1. Enter the **setup code** and create the first administrator.
+2. Scan the QR code with an authenticator app (two-factor sign-in).
+3. Enter the church name.
+4. Choose and test the speech-to-text provider (Deepgram) and the translator (Azure).
+
+The setup code only works while no administrator exists, so nobody else can claim a fresh install. A command-line fallback exists: `docker compose run --rm admin python -m captions.admin.cli create-user --username NAME --role admin`.
 
 ## 5. Configure in the dashboard
 
-1. **Branding:** church name, button color and logo (PNG). Phones pick changes up within a minute.
-2. **Providers & Settings:**
+1. **Branding:** church name, logo (PNG), button color and fonts. Phones pick changes up within a minute.
+2. **Providers & Settings** (already done in the wizard; revisit any time):
    - Choose Deepgram + Azure, paste the keys and set the Azure region.
    - Set the public base URL, e.g. `https://captions.example.com`.
    - Add Deepgram keyterms such as the church name, pastors' names, local towns and scripture book names.

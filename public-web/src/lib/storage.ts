@@ -1,4 +1,4 @@
-type Key = "cc.lang" | "cc.textSize" | "cc.theme";
+type Key = "cc.lang" | "cc.textSize" | "cc.theme" | "cc.fonts";
 
 export function readStorage(key: Key): string | null {
   try {

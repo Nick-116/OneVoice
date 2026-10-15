@@ -20,6 +20,8 @@ from .security import decrypt_secret
 GENERAL_DEFAULTS: dict[str, Any] = {
     "church_name": "Our Church",
     "accent_color": "#2563EB",  # public site buttons/links; darker shades derived for contrast
+    "body_font": "system",  # caption + interface text (keys in captions.branding.FONTS)
+    "name_font": "system",  # church name under the logo
     "public_base_url": "",  # empty = use PUBLIC_BASE_URL env
     "manual_default_minutes": 120,
     "ended_grace_minutes": 180,
@@ -27,7 +29,7 @@ GENERAL_DEFAULTS: dict[str, Any] = {
     "transcript_retention_days": 30,
     "translate_partials": False,
     "partial_min_interval_ms": 1500,
-    "language_grace_seconds": 60,
+    "language_grace_seconds": 15,  # stop translating a language this long after its last viewer leaves
     "audio_timeout_seconds": 5,
     "digital_silence_seconds": 20,
 }

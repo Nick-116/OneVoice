@@ -1,10 +1,14 @@
 import { useSyncExternalStore } from "react";
+import { fontStack } from "./fonts";
 import { readStorage, writeStorage } from "./storage";
 
 /** Accent palette chosen in the admin dashboard (contrast-safe shades computed by the server). */
 export type Theme = Partial<Record<"50" | "100" | "500" | "600" | "700" | "800", string>>;
 
+export type Fonts = { body?: string; name?: string };
+
 const THEME_KEY = "cc.theme";
+const FONTS_KEY = "cc.fonts";
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const SHADES = ["50", "100", "500", "600", "700", "800"] as const;
 
@@ -23,14 +27,24 @@ export function applyTheme(theme: Theme | null | undefined, persist = true): voi
   if (persist) writeStorage(THEME_KEY, JSON.stringify(theme));
 }
 
-/** Re-apply the last theme seen on this phone before the network answers (no color flash). */
+/** Sets --font-body (captions and interface) and --font-name (church name). */
+export function applyFonts(fonts: Fonts | null | undefined, persist = true): void {
+  if (!fonts) return;
+  const style = document.documentElement.style;
+  style.setProperty("--font-body", fontStack(fonts.body));
+  style.setProperty("--font-name", fontStack(fonts.name));
+  if (persist) writeStorage(FONTS_KEY, JSON.stringify(fonts));
+}
+
+/** Re-apply the last theme and fonts seen on this phone before the network answers (no flash). */
 export function restoreTheme(): void {
-  const saved = readStorage(THEME_KEY);
-  if (!saved) return;
   try {
-    applyTheme(JSON.parse(saved) as Theme, false);
+    const theme = readStorage(THEME_KEY);
+    if (theme) applyTheme(JSON.parse(theme) as Theme, false);
+    const fonts = readStorage(FONTS_KEY);
+    if (fonts) applyFonts(JSON.parse(fonts) as Fonts, false);
   } catch {
-    /* ignore corrupt value */
+    /* ignore corrupt values */
   }
 }
 

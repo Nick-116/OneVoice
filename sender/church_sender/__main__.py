@@ -53,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
 
         return run_headless(cfg)
 
-    from .gui import run_gui
+    from .webui import run_gui
 
     return run_gui(cfg, minimized=args.minimized)
 

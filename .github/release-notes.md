@@ -1,0 +1,21 @@
+## OneVoice Sender: desktop audio sender
+
+Sends the speech mix from your sound board (Dante Virtual Soundcard, a Dante AVIO USB adapter, or any audio input) to your OneVoice server for live captions and translation.
+
+| Download | For |
+|---|---|
+| `OneVoiceSender-*-macOS-AppleSilicon.dmg` | Macs with M1/M2/M3/M4 chips |
+| `OneVoiceSender-*-macOS-Intel.dmg` | Intel Macs |
+| `OneVoiceSender-*-Windows-Setup.exe` | Windows 10/11 installer (recommended) |
+| `OneVoiceSender-*-Windows-Portable.zip` | Windows, no install (unzip and run) |
+
+### First launch
+These builds are not yet signed with paid Apple / Microsoft certificates, so your computer asks once before opening them:
+- **macOS:** open the DMG and drag the app to Applications. The first time, **right-click the app → Open → Open** (or System Settings → Privacy & Security → *Open Anyway*). Allow microphone access when asked.
+- **Windows:** if SmartScreen says *Windows protected your PC*, click **More info → Run anyway**.
+
+Then paste your server address and the sender token from the OneVoice admin dashboard (**Audio → Senders**), choose the input and channel, and click **Start streaming**.
+
+The server itself runs with Docker; see the README.
+
+Verify downloads with `SHA256SUMS.txt`.

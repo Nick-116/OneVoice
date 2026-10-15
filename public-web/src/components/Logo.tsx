@@ -37,7 +37,7 @@ export function Logo({ churchName, size }: Props) {
           className="h-20 w-auto max-w-[16rem] object-contain"
         />
       )}
-      {churchName && <span className="text-2xl font-semibold tracking-tight text-gray-900">{churchName}</span>}
+      {churchName && <span className="font-name text-2xl font-semibold tracking-tight text-gray-900">{churchName}</span>}
     </div>
   );
 }

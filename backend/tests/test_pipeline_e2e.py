@@ -122,7 +122,11 @@ async def test_full_flow_with_viewers_and_isolation(sup, redis_client):
                 msg = await sub.get_message(ignore_subscribe_messages=True, timeout=0.05)
         assert any(c["final"] for c in got.get("cap:east:en", []))
         es_finals = [c for c in got["cap:east:es"] if c["t"] == "caption" and c["final"]]
-        assert es_finals and es_finals[0]["text"].startswith("[es] ")
+        from captions.providers.translate.demo_phrases import PHRASES
+
+        spanish = {v["es"] for v in PHRASES.values()}
+        assert es_finals and all(c["text"] in spanish or c["text"].startswith("[es] ") for c in es_finals)
+        assert any(c["text"] in spanish for c in es_finals)  # real sample translations, not English
         assert "cap:east:fr" not in got  # nobody watching French -> never translated (no cost)
         assert "cap:west:es" not in got  # other campus untouched
 
@@ -199,3 +203,35 @@ async def _check(r, slug, phase, captions=None):
 
 def _phase(r, slug, phase, captions=None):
     return lambda: _check(r, slug, phase, captions)
+
+
+async def test_switching_language_stops_translating_the_old_one(sup, redis_client):
+    """A viewer moving from Spanish to French: Spanish translation stops after the grace period."""
+    r = redis_client
+    await use_simulated()
+    async with db.sessionmaker()() as s:
+        s.add(m.AppSetting(key="general", value={"language_grace_seconds": 1}))
+        await s.commit()
+    cid = await make_campus("east", languages=("en", "es", "fr"))
+    await live_event(cid)
+    sender = FakeSender(r, cid)
+    sender.start()
+    try:
+        await r.hset("viewers:test", mapping={"east|es": 1})
+        await tick_until(sup, _channels(sup, cid, {"es"}), timeout=10)
+        # The phone switches language: the public service now reports a French viewer only.
+        await r.delete("viewers:test")
+        await r.hset("viewers:test", mapping={"east|fr": 1})
+        await tick_until(sup, _channels(sup, cid, {"fr"}), timeout=10)
+        await r.delete("viewers:test")
+        await tick_until(sup, _channels(sup, cid, set()), timeout=10)  # nobody left: no translation at all
+    finally:
+        await sender.stop()
+
+
+def _channels(sup, campus_id, expected):
+    async def check():
+        p = sup.pipelines.get(campus_id)
+        return p is not None and set(p.channels) == expected
+
+    return check

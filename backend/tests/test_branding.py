@@ -79,6 +79,9 @@ async def test_branding_upload_flows_to_public_site(clean, redis_client, run_ser
         body = r.json()
         assert body["accent_color"] == "#F37121" and body["contrast"]["700"] >= 4.5
         assert (await a.put("/api/branding", json={"accent_color": "orange"})).status_code == 422
+        assert (await a.put("/api/branding", json={"body_font": "Comic Sans; }"})).status_code == 422
+        r = await a.put("/api/branding", json={"body_font": "atkinson", "name_font": "cinzel"})
+        assert r.json()["body_font"] == "atkinson" and r.json()["name_font"] == "cinzel"
 
         # Wrong type, fake PNG, oversize: all refused.
         assert (await c.put("/api/branding/logo", content=b"x", headers={**a.headers(), "Content-Type": "image/svg+xml"})).status_code == 415
@@ -104,6 +107,7 @@ async def test_branding_upload_flows_to_public_site(clean, redis_client, run_ser
         cfg = (await c.get("/api/public/config")).json()
         assert cfg["church_name"] == "Grace Chapel"
         assert cfg["theme"]["500"] == "#F37121" and cfg["logo_version"]
+        assert cfg["fonts"] == {"body": "atkinson", "name": "cinzel"}
         logo = await c.get("/branding/logo", params={"v": cfg["logo_version"]})
         assert logo.status_code == 200 and logo.headers["content-type"] == "image/png"
         assert "immutable" in logo.headers["cache-control"]

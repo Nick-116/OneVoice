@@ -244,6 +244,7 @@ class Supervisor:
         branding = {
             "church_name": g["church_name"],
             "theme": build_palette(str(g.get("accent_color") or "")),
+            "fonts": {"body": g.get("body_font") or "system", "name": g.get("name_font") or "system"},
             "logo_version": self.logo_sha[:16] if self.logo_sha else None,
         }
         await self.r.set(rkeys.PUBLIC_BRANDING, json.dumps(branding), ex=120)

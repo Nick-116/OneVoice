@@ -1,3 +1,4 @@
+import { Brand as ProductBrand } from './Brand';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { api } from '../api';
@@ -63,8 +64,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 function Brand() {
   return (
     <div className="flex items-center gap-2 px-5 py-4">
-      <span className="flex h-8 w-8 items-center justify-center rounded-md bg-indigo-600 text-sm font-bold text-white">CC</span>
-      <span className="text-sm font-semibold text-white">Captions Admin</span>
+      <ProductBrand dark />
     </div>
   );
 }
@@ -235,7 +235,7 @@ export function Layout() {
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <div className="flex-1 truncate text-sm font-medium text-gray-700">{current?.label ?? 'Captions Admin'}</div>
+          <div className="flex-1 truncate text-sm font-medium text-gray-700">{current?.label ?? 'OneVoice'}</div>
           <UserMenu />
         </header>
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">

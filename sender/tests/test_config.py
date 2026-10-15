@@ -85,7 +85,9 @@ def test_header_validation(kr):
 
 def test_url_validation_and_query():
     assert validate_server_url("wss://audio.example.com/ingest/v1/stream") is None
-    assert "local testing" in validate_server_url("ws://127.0.0.1:8082/ingest/v1/stream")
+    assert "local network" in validate_server_url("ws://127.0.0.1:8082/ingest/v1/stream")
+    for lan in ("ws://192.168.1.20:8082/ingest/v1/stream", "ws://10.0.0.5/x", "ws://captions.local/x", "ws://onevoice-server/x"):
+        assert "local network" in validate_server_url(lan)
     assert validate_server_url("ws://localhost/x")
     for bad in ("ws://audio.example.com/ingest", "https://audio.example.com", "", "audio.example.com"):
         with pytest.raises(ValueError):
@@ -97,11 +99,11 @@ def test_url_validation_and_query():
 def test_launch_agent_plist():
     import plistlib
 
-    data = plistlib.loads(autostart.mac_plist_bytes(["/Applications/Church Audio Sender.app/Contents/MacOS/ChurchAudioSender", "--minimized"]))
-    assert data["Label"] == "church.captions.sender"
+    data = plistlib.loads(autostart.mac_plist_bytes(["/Applications/OneVoice Sender.app/Contents/MacOS/OneVoiceSender", "--minimized"]))
+    assert data["Label"] == "org.onevoice.sender"
     assert data["RunAtLoad"] is True
     assert data["ProgramArguments"][-1] == "--minimized"
-    assert autostart.mac_plist_path().name == "church.captions.sender.plist"
+    assert autostart.mac_plist_path().name == "org.onevoice.sender.plist"
     cmd = autostart.launch_command(["--minimized"])
     assert cmd[-1] == "--minimized" and cmd[0] == sys.executable
     assert autostart.windows_command_line([r"C:\Program Files\App\app.exe", "--minimized"]) == r'"C:\Program Files\App\app.exe" --minimized'

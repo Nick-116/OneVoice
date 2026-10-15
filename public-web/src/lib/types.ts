@@ -44,6 +44,7 @@ export interface PublicConfig {
   campuses: CampusSummary[];
   theme?: Partial<Record<"50" | "100" | "500" | "600" | "700" | "800", string>> | null;
   logo_version?: string | null;
+  fonts?: { body?: string; name?: string } | null;
 }
 
 export interface CaptionMessage {

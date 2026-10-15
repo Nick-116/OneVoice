@@ -6,6 +6,8 @@ export default defineConfig({
   build: {
     outDir: "dist",
     assetsDir: "assets",
+    // Never inline assets as data: URIs (fonts would be blocked by the CSP's font-src 'self').
+    assetsInlineLimit: 0,
     emptyOutDir: true,
     sourcemap: false,
     target: "es2020",

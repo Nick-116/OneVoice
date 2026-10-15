@@ -13,6 +13,25 @@ import io
 import re
 
 HEX_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
+
+# Fonts bundled with the public site (public-web/src/lib/fonts.ts), key -> display name.
+FONTS = {
+    "system": "Phone default (system)",
+    "inter": "Inter",
+    "open-sans": "Open Sans",
+    "lato": "Lato",
+    "nunito": "Nunito",
+    "source-sans": "Source Sans 3",
+    "atkinson": "Atkinson Hyperlegible (high legibility)",
+    "merriweather": "Merriweather (serif)",
+    "lora": "Lora (serif)",
+    "playfair": "Playfair Display (serif)",
+    "montserrat": "Montserrat",
+    "poppins": "Poppins",
+    "cinzel": "Cinzel (classic capitals)",
+    "cormorant": "Cormorant Garamond (serif)",
+    "raleway": "Raleway",
+}
 DEFAULT_ACCENT = "#2563EB"
 
 MAX_LOGO_UPLOAD_BYTES = 5 * 1024 * 1024

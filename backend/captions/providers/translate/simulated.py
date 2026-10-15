@@ -7,6 +7,7 @@ from typing import Any
 
 from .base import TranslationError, TranslationProvider
 from .azure import AZURE_SUPPORTED
+from .demo_phrases import lookup
 
 
 class SimulatedTranslator(TranslationProvider):
@@ -23,4 +24,6 @@ class SimulatedTranslator(TranslationProvider):
             await asyncio.sleep(self.delay)
         if target in self.fail_languages:
             raise TranslationError(f"simulated failure for {target}")
-        return [f"[{target}] {t}" for t in texts]
+        # Built-in sample translations for the demo sermon; anything else is tagged so
+        # it is obvious the simulator (not a real translator) produced it.
+        return [lookup(t, target) or f"[{target}] {t}" for t in texts]

@@ -115,6 +115,7 @@ def register_routes(app: FastAPI) -> None:
         return {
             "church_name": b.get("church_name", ""),
             "theme": b.get("theme"),
+            "fonts": b.get("fonts"),
             "logo_version": b.get("logo_version"),
             "campuses": json.loads(campuses) if campuses else [],
         }

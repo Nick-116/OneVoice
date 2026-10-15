@@ -374,6 +374,9 @@ export type PaletteShade = '50' | '100' | '500' | '600' | '700' | '800';
 export interface Branding {
   church_name: string;
   accent_color: string;
+  body_font: string;
+  name_font: string;
+  fonts: Record<string, string>;
   palette: Record<PaletteShade, string>;
   contrast: Partial<Record<PaletteShade, number>>;
   logo: { sha256: string; updated_at: string | null; bytes: number } | null;

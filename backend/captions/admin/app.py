@@ -7,6 +7,7 @@ front of this service is an additional layer, not a replacement.
 
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -18,7 +19,7 @@ from ..config import get_settings
 from ..logging_setup import setup_logging
 from ..redisio import make_redis
 from ..web import CSP, MethodAllowListMiddleware, RateLimiter, RateLimitMiddleware, SecurityHeadersMiddleware, spa_response
-from . import auth, branding_routes, operations, services, update_routes
+from . import auth, branding_routes, operations, services, setup_routes, update_routes
 
 
 @asynccontextmanager
@@ -26,6 +27,11 @@ async def lifespan(app: FastAPI):
     s = get_settings()
     setup_logging("admin", s.log_level)
     app.state.redis = make_redis(decode=True)
+    try:
+        async with db.sessionmaker()() as session:
+            await setup_routes.ensure_setup_code(app.state.redis, session)
+    except Exception:  # DB not migrated yet etc.; /api/setup/status retries later
+        logging.getLogger(__name__).exception("could not prepare first-run setup")
     yield
     await app.state.redis.aclose()
     await db.dispose()
@@ -44,6 +50,7 @@ def create_app() -> FastAPI:
     app.include_router(operations.router)
     app.include_router(branding_routes.router)
     app.include_router(update_routes.router)
+    app.include_router(setup_routes.router)
 
     @app.api_route("/healthz", methods=["GET", "HEAD"], include_in_schema=False)
     async def healthz():

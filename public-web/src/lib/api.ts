@@ -36,6 +36,7 @@ export async function fetchConfig(signal?: AbortSignal): Promise<PublicConfig> {
     campuses: body.campuses,
     theme: body.theme && typeof body.theme === "object" ? body.theme : null,
     logo_version: typeof body.logo_version === "string" ? body.logo_version : null,
+    fonts: body.fonts && typeof body.fonts === "object" ? body.fonts : null,
   };
 }
 

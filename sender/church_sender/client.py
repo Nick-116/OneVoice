@@ -70,15 +70,32 @@ def is_local_host(host: str | None) -> bool:
         return False
 
 
+LAN_SUFFIXES = (".local", ".lan", ".home.arpa", ".internal")
+
+
+def is_private_network_host(host: str | None) -> bool:
+    """Loopback, RFC 1918 / ULA addresses, link-local, or an obviously-local name."""
+    if not host:
+        return False
+    if is_local_host(host):
+        return True
+    host = host.strip("[]").lower()
+    try:
+        ip = ipaddress.ip_address(host)
+        return ip.is_private or ip.is_link_local
+    except ValueError:
+        return "." not in host or host.endswith(LAN_SUFFIXES)
+
+
 def validate_server_url(url: str) -> str | None:
-    """Raise ValueError if unusable; return a warning string for plain ws:// to localhost."""
+    """Raise ValueError if unusable; return a warning for unencrypted ws:// on a local network."""
     parts = urlsplit((url or "").strip())
     if parts.scheme not in ("wss", "ws") or not parts.hostname:
-        raise ValueError("Server URL must start with wss:// (e.g. wss://audio.example.com/ingest/v1/stream)")
+        raise ValueError("Server URL must start with wss:// or ws:// (e.g. wss://audio.example.com/ingest/v1/stream)")
     if parts.scheme == "ws":
-        if not is_local_host(parts.hostname):
-            raise ValueError("Unencrypted ws:// is only allowed for localhost testing; use wss://")
-        return "Unencrypted ws:// connection — for local testing only"
+        if not is_private_network_host(parts.hostname):
+            raise ValueError("Unencrypted ws:// is only allowed on a local network; use wss:// over the internet")
+        return "Unencrypted connection (ws://): fine on your own local network, use wss:// over the internet"
     return None
 
 
@@ -280,7 +297,7 @@ class SenderClient:
             ping_timeout=20,
             compression=None,
             max_size=2 ** 16,
-            user_agent_header=f"church-captions-sender/{__version__}",
+            user_agent_header=f"onevoice-sender/{__version__}",
         )
         if url.startswith("wss://"):
             kwargs["ssl"] = make_ssl_context()

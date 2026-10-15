@@ -10,8 +10,8 @@ from pathlib import Path
 
 log = logging.getLogger(__name__)
 
-LABEL = "church.captions.sender"
-WINDOWS_VALUE_NAME = "ChurchCaptionsSender"
+LABEL = "org.onevoice.sender"
+WINDOWS_VALUE_NAME = "OneVoiceSender"
 WINDOWS_RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 
 

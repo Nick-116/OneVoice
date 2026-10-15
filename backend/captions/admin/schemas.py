@@ -298,3 +298,14 @@ class UserPatch(Strict):
 class BrandingIn(Strict):
     church_name: str | None = Field(default=None, min_length=1, max_length=120)
     accent_color: str | None = Field(default=None, pattern=r"^#[0-9A-Fa-f]{6}$")
+    body_font: str | None = None
+    name_font: str | None = None
+
+    @field_validator("body_font", "name_font")
+    @classmethod
+    def font_ok(cls, v: str | None) -> str | None:
+        from ..branding import FONTS
+
+        if v is not None and v not in FONTS:
+            raise ValueError("unknown font")
+        return v

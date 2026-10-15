@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRef, useState, type FormEvent } from 'react';
 import { api } from '../api';
-import { Badge, Button, Card, ConfirmDialog, ErrorBox, Field, Input, Loading, PageHeader } from '../components/ui';
+import { Badge, Button, Card, ConfirmDialog, ErrorBox, Field, Input, Loading, PageHeader, Select } from '../components/ui';
 import { useToast } from '../components/Toast';
 import { keys, useAction } from '../lib/queries';
+import { svgFontFamily } from '../lib/fonts';
 import type { Branding } from '../types';
 
 const brandingKey = ['branding'] as const;
@@ -12,7 +13,8 @@ const MAX_LOGO_BYTES = 5 * 1024 * 1024;
 const PRESETS = ['#F37121', '#2563EB', '#16A34A', '#7C3AED', '#DC2626', '#0D9488', '#111827'];
 
 /** Phone-sized preview drawn as SVG (colors via attributes, so it works under the strict CSP). */
-function Preview({ branding, accent, name, logoSrc }: { branding: Branding; accent: string; name: string; logoSrc: string | null }) {
+function Preview({ branding, accent, name, logoSrc, bodyFont, nameFont }: { branding: Branding; accent: string; name: string; logoSrc: string | null; bodyFont: string; nameFont: string }) {
+  const body = svgFontFamily(bodyFont);
   const p = accent.toUpperCase() === branding.accent_color.toUpperCase() ? branding.palette : null;
   const fill = p ? p['700'] : accent;
   const tint = p ? p['50'] : '#F3F4F6';
@@ -20,16 +22,17 @@ function Preview({ branding, accent, name, logoSrc }: { branding: Branding; acce
   return (
     <svg viewBox="0 0 240 300" className="mx-auto h-72 w-auto rounded-2xl border border-gray-200 bg-white shadow-sm" role="img" aria-label="Preview of the caption site">
       {logoSrc ? <image href={logoSrc} x="90" y="18" width="60" height="48" preserveAspectRatio="xMidYMid meet" /> : null}
-      <text x="120" y="88" textAnchor="middle" fontSize="15" fontWeight="600" fill="#111827">{name || 'Church name'}</text>
-      <text x="120" y="118" textAnchor="middle" fontSize="16" fontWeight="700" fill="#111827">Welcome</text>
+      <text x="120" y="88" textAnchor="middle" fontSize="15" fontWeight="600" fill="#111827" fontFamily={svgFontFamily(nameFont)}>{name || 'Church name'}</text>
+      <text x="120" y="118" textAnchor="middle" fontSize="16" fontWeight="700" fill="#111827" fontFamily={body}>Welcome</text>
       <rect x="20" y="136" width="200" height="34" rx="10" fill="white" stroke="#E5E7EB" strokeWidth="2" />
-      <text x="34" y="158" fontSize="12" fill="#111827">English</text>
+      <text x="34" y="158" fontSize="12" fill="#111827" fontFamily={body}>English</text>
       <rect x="20" y="178" width="200" height="34" rx="10" fill={tint} stroke={border} strokeWidth="2" />
-      <text x="34" y="200" fontSize="12" fill="#111827">Español</text>
+      <text x="34" y="200" fontSize="12" fill="#111827" fontFamily={body}>Español</text>
       <circle cx="204" cy="195" r="6" fill="white" stroke={border} strokeWidth="2" />
       <circle cx="204" cy="195" r="3" fill={border} />
+      <text x="20" y="230" fontSize="11.5" fill="#374151" fontFamily={body}>The Lord is my shepherd; I shall not want.</text>
       <rect x="20" y="240" width="200" height="38" rx="12" fill={fill} />
-      <text x="120" y="264" textAnchor="middle" fontSize="13" fontWeight="600" fill="white">Continue</text>
+      <text x="120" y="264" textAnchor="middle" fontSize="13" fontWeight="600" fill="white" fontFamily={body}>Continue</text>
     </svg>
   );
 }
@@ -38,11 +41,13 @@ function BrandingForm({ branding }: { branding: Branding }) {
   const toast = useToast();
   const [name, setName] = useState(branding.church_name);
   const [accent, setAccent] = useState(branding.accent_color);
+  const [bodyFont, setBodyFont] = useState(branding.body_font);
+  const [nameFont, setNameFont] = useState(branding.name_font);
   const [removeOpen, setRemoveOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const logoSrc = branding.logo ? `/api/branding/logo?v=${branding.logo.sha256.slice(0, 16)}` : null;
 
-  const save = useAction((b: { church_name?: string; accent_color?: string }) => api.put<Branding>('/api/branding', b), {
+  const save = useAction((b: Partial<Pick<Branding, 'church_name' | 'accent_color' | 'body_font' | 'name_font'>>) => api.put<Branding>('/api/branding', b), {
     success: 'Branding saved. Phones pick it up within a minute.',
     invalidate: [brandingKey, keys.settings],
   });
@@ -58,7 +63,9 @@ function BrandingForm({ branding }: { branding: Branding }) {
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    const changes: { church_name?: string; accent_color?: string } = {};
+    const changes: Partial<Pick<Branding, 'church_name' | 'accent_color' | 'body_font' | 'name_font'>> = {};
+    if (bodyFont !== branding.body_font) changes.body_font = bodyFont;
+    if (nameFont !== branding.name_font) changes.name_font = nameFont;
     if (name.trim() && name.trim() !== branding.church_name) changes.church_name = name.trim();
     if (HEX.test(accent) && accent.toUpperCase() !== branding.accent_color.toUpperCase()) changes.accent_color = accent.toUpperCase();
     if (Object.keys(changes).length) save.mutate(changes);
@@ -82,7 +89,7 @@ function BrandingForm({ branding }: { branding: Branding }) {
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_auto]">
       <div className="space-y-5">
-        <Card title="Name and colors">
+        <Card title="Name, colors and fonts">
           <form onSubmit={submit} className="space-y-4">
             <Field label="Church name" hint="Shown under the logo on the caption site.">
               {(id) => <Input id={id} maxLength={120} required value={name} onChange={(e) => setName(e.target.value)} />}
@@ -127,6 +134,26 @@ function BrandingForm({ branding }: { branding: Branding }) {
                 </div>
               )}
             </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Caption and text font" hint="Used for captions and all page text. Languages the font doesn’t cover use the phone’s font.">
+                {(id) => (
+                  <Select id={id} value={bodyFont} onChange={(e) => setBodyFont(e.target.value)}>
+                    {Object.entries(branding.fonts).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </Select>
+                )}
+              </Field>
+              <Field label="Church name font" hint="Used only for the church name under the logo.">
+                {(id) => (
+                  <Select id={id} value={nameFont} onChange={(e) => setNameFont(e.target.value)}>
+                    {Object.entries(branding.fonts).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </Select>
+                )}
+              </Field>
+            </div>
             {!HEX.test(accent) && <p className="text-sm text-red-700">Enter a color like #F37121.</p>}
             {contrast !== undefined && (
               <p className="text-xs text-gray-500">
@@ -136,7 +163,7 @@ function BrandingForm({ branding }: { branding: Branding }) {
             )}
             <div className="flex justify-end">
               <Button type="submit" variant="primary" loading={save.isPending} disabled={!HEX.test(accent) || !name.trim()}>
-                Save name and color
+                Save branding
               </Button>
             </div>
           </form>
@@ -169,7 +196,7 @@ function BrandingForm({ branding }: { branding: Branding }) {
       </div>
 
       <Card title="Preview">
-        <Preview branding={branding} accent={HEX.test(accent) ? accent : branding.accent_color} name={name} logoSrc={logoSrc} />
+        <Preview branding={branding} accent={HEX.test(accent) ? accent : branding.accent_color} name={name} logoSrc={logoSrc} bodyFont={bodyFont} nameFont={nameFont} />
         <p className="mt-2 max-w-60 text-center text-xs text-gray-500">The preview shows exact shades after you save.</p>
       </Card>
 

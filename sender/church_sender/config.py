@@ -22,9 +22,9 @@ from .audio import SUPPORTED_RATES
 
 log = logging.getLogger(__name__)
 
-APP_DIR_NAME = "ChurchCaptionsSender"
-APP_AUTHOR = "ChurchCaptions"
-KEYRING_SERVICE = "church-captions-sender"
+APP_DIR_NAME = "OneVoiceSender"
+APP_AUTHOR = "OneVoice"
+KEYRING_SERVICE = "onevoice-sender"
 TOKEN_KEY = "sender-token"
 HEADER_KEY_PREFIX = "header:"
 

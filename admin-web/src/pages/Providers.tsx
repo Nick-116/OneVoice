@@ -5,7 +5,7 @@ import { Badge, Button, Card, Checkbox, ErrorBox, Field, Input, Loading, PageHea
 import { keys, useAction, useSettings } from '../lib/queries';
 import type { GeneralSettings, ProviderInfo, ProviderKind, Providers, ProviderSettings, ProviderSettingValue, ProviderUpdate } from '../types';
 
-const providersKey = ['providers'] as const;
+export const providersKey = ['providers'] as const;
 
 const PROVIDER_LABELS: Record<string, string> = {
   deepgram: 'Deepgram',
@@ -65,7 +65,7 @@ function cleanSettings(s: ProviderSettings): ProviderSettings {
   return out;
 }
 
-function ProviderForm({ kind, info }: { kind: ProviderKind; info: ProviderInfo }) {
+export function ProviderForm({ kind, info }: { kind: ProviderKind; info: ProviderInfo }) {
   const [provider, setProvider] = useState(info.provider);
   const [settings, setSettings] = useState<ProviderSettings>(info.settings);
   const [apiKey, setApiKey] = useState('');

@@ -10,7 +10,7 @@
 - [ ] `./scripts/generate-secrets.sh` run; `secrets/` is mode 700 and **not** in git
 - [ ] `secrets/` and nightly `backups/` copied off-server
 - [ ] `.env`: real `PUBLIC_BASE_URL`, `ADMIN_ORIGIN`, Newt credentials, `COOKIE_SECURE=true`, `ADMIN_REQUIRE_MFA=true`
-- [ ] Logo placed in `branding/`
+- [ ] Branding set in the dashboard (name, logo, color, fonts)
 
 ## Pangolin / DNS
 - [ ] `captions.<domain>`: authentication off (the only public resource)
@@ -20,7 +20,7 @@
 - [ ] From cellular: `POST https://captions.<domain>/api/public/config` → 405; `https://audio.<domain>` unreachable
 
 ## Application
-- [ ] First admin created; MFA enrolled; at least two admins exist (lockout protection)
+- [ ] Setup wizard completed (first admin, MFA, providers); at least two admins exist (lockout protection)
 - [ ] Operators (production volunteers) created with role `operator`
 - [ ] Deepgram + Azure keys saved; **Test translation** works for every enabled language
 - [ ] Deepgram keyterms added (church name, pastors, towns, scripture books)

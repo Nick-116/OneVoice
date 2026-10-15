@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchConfig } from "../lib/api";
-import { applyTheme, setLogoVersion } from "../lib/theme";
+import { applyFonts, applyTheme, setLogoVersion } from "../lib/theme";
 import { backoffMs } from "../lib/time";
 import type { PublicConfig } from "../lib/types";
 
@@ -16,6 +16,7 @@ export function useConfig(): ConfigState {
       try {
         const config = await fetchConfig(ctrl.signal);
         applyTheme(config.theme);
+        applyFonts(config.fonts);
         setLogoVersion(config.logo_version);
         setState({ kind: "ok", config });
       } catch {

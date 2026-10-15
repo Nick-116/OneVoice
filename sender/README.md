@@ -1,9 +1,16 @@
-# Church Audio Sender
+# OneVoice Sender
+
+> **Download ready-made apps** (macOS Apple Silicon / Intel, Windows installer) from the [OneVoice releases](https://github.com/Nick-116/OneVoice/releases/latest). The rest of this page covers running from source and the details.
+
+The app is a native window (WKWebView on macOS with real translucency, WebView2 on Windows) with a modern glass interface: a big live status, a level meter with peak hold and clip warning, and the connection settings. The token is stored in the system keychain / Credential Manager, never in plain files.
+
+Unencrypted `ws://` addresses are accepted on a **local network** (192.168.x.x, 10.x.x.x, `.local`, etc.) for setups without HTTPS; use `wss://` whenever the server is reached over the internet.
+
 
 A small desktop app for macOS and Windows. It takes the speech mix from the Yamaha console over Dante, sends it to the caption server, and shows you the input level and the connection state.
 
 ```
-Yamaha console ──Dante──▶ church computer ──▶ Church Audio Sender ──WSS──▶ audio.example.com/ingest/v1/stream
+Yamaha console ──Dante──▶ church computer ──▶ OneVoice Sender ──WSS──▶ audio.example.com/ingest/v1/stream
                           (Dante Virtual Soundcard
                            or Dante AVIO USB adapter)
 ```
@@ -43,8 +50,8 @@ The `sounddevice` wheels for macOS and Windows include PortAudio, so nothing els
 5. Tick **Start streaming automatically when the app opens** and **Launch at login**. The computer then streams unattended after a reboot.
 
 Settings are stored in a JSON file in the platform config folder:
-* macOS: `~/Library/Application Support/ChurchCaptionsSender/config.json`
-* Windows: `%LOCALAPPDATA%\ChurchCaptions\ChurchCaptionsSender\config.json`
+* macOS: `~/Library/Application Support/OneVoiceSender/config.json`
+* Windows: `%LOCALAPPDATA%\OneVoice\OneVoiceSender\config.json`
 
 ## 3. Dante setup
 
@@ -69,7 +76,7 @@ The AVIO USB adapter appears as a normal two-channel USB audio device ("Dante AV
 
 macOS treats any audio input, Dante included, as the "microphone". The first time you click **Test input** or **Start streaming**, macOS asks for permission. Click **Allow**.
 
-* If you clicked *Don't Allow*, the meter shows **digital silence**. Fix it in **System Settings → Privacy & Security → Microphone** by enabling *Church Audio Sender*, or *Terminal* / *Python* when running from source. Then restart the app.
+* If you clicked *Don't Allow*, the meter shows **digital silence**. Fix it in **System Settings → Privacy & Security → Microphone** by enabling *OneVoice Sender*, or *Terminal* / *Python* when running from source. Then restart the app.
 * The bundled `.app` contains the required `NSMicrophoneUsageDescription`.
 
 ### Windows: host APIs
@@ -90,8 +97,8 @@ pip install -r requirements-dev.txt
 python build.py                 # or: pyinstaller --noconfirm --clean sender.spec
 ```
 
-* **macOS** → `dist/Church Audio Sender.app`. Copy it to `/Applications`. For distribution beyond your own computers, sign and notarise it (`codesign --deep --options runtime -s "Developer ID Application: …"`, then `xcrun notarytool submit`). Otherwise, right-click → **Open** the first time to get past Gatekeeper.
-* **Windows** → `dist\ChurchAudioSender\` containing `ChurchAudioSender.exe` (the GUI, no console) and `ChurchAudioSender-cli.exe` (a console build for `--headless` and `--list-devices`). Copy the folder to `C:\Program Files\ChurchAudioSender\`.
+* **macOS** → `dist/OneVoice Sender.app`. Copy it to `/Applications`. For distribution beyond your own computers, sign and notarise it (`codesign --deep --options runtime -s "Developer ID Application: …"`, then `xcrun notarytool submit`). Otherwise, right-click → **Open** the first time to get past Gatekeeper.
+* **Windows** → `dist\OneVoiceSender\` containing `OneVoiceSender.exe` (the GUI, no console) and `OneVoiceSender-cli.exe` (a console build for `--headless` and `--list-devices`). Copy the folder to `C:\Program Files\OneVoiceSender\`.
 
 ## 6. Headless / service use
 
@@ -102,12 +109,12 @@ python -m church_sender --headless          # uses the saved settings, logs to f
 
 Configure the app once in the GUI on the same user account. The token is read from that user's keychain or Credential Manager. Headless mode waits for the audio device if it is not present yet, which helps when DVS starts after login. It reconnects forever and exits with code 3 if the sender is revoked.
 
-* **macOS**: the **Launch at login** checkbox writes `~/Library/LaunchAgents/church.captions.sender.plist`, which starts the GUI minimised. To run headless at login instead, edit `ProgramArguments` in that plist to end with `--headless`. It must stay a *LaunchAgent* in the user session (not a system LaunchDaemon) because the keychain and the microphone permission are per user.
-* **Windows**: the checkbox adds a `ChurchCaptionsSender` value under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. For headless at logon, point a Task Scheduler task ("At log on", "Run only when user is logged on") at `ChurchAudioSender-cli.exe --headless`. Configure Windows to auto-login the streaming account.
+* **macOS**: the **Launch at login** checkbox writes `~/Library/LaunchAgents/org.onevoice.sender.plist`, which starts the GUI minimised. To run headless at login instead, edit `ProgramArguments` in that plist to end with `--headless`. It must stay a *LaunchAgent* in the user session (not a system LaunchDaemon) because the keychain and the microphone permission are per user.
+* **Windows**: the checkbox adds a `OneVoiceSender` value under `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`. For headless at logon, point a Task Scheduler task ("At log on", "Run only when user is logged on") at `OneVoiceSender-cli.exe --headless`. Configure Windows to auto-login the streaming account.
 
 Logs (rotating, 5 × 2 MB). The token is never written, and anything token-shaped is redacted:
-* macOS: `~/Library/Logs/ChurchCaptionsSender/sender.log`
-* Windows: `%LOCALAPPDATA%\ChurchCaptions\ChurchCaptionsSender\Logs\sender.log`
+* macOS: `~/Library/Logs/OneVoiceSender/sender.log`
+* Windows: `%LOCALAPPDATA%\OneVoice\OneVoiceSender\Logs\sender.log`
 
 ## 7. How the link behaves
 
@@ -165,5 +172,6 @@ Code layout (`church_sender/`):
 | `autostart.py` | LaunchAgent / HKCU Run entry |
 | `runner.py` | headless service mode and the GUI's background client thread |
 | `logsetup.py` | rotating log file with token redaction |
-| `gui.py` | Tkinter UI |
+| `controller.py` | UI-independent logic (settings, test input, streaming, status) |
+| `webui.py` + `ui/` | Native window (pywebview) and the HTML/CSS/JS interface |
 | `__main__.py` | CLI: GUI (default), `--headless`, `--list-devices`, `--minimized` |

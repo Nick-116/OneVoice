@@ -20,7 +20,7 @@ export function Header({ churchName, campusName, languageName, pill, textSize, o
       <div className="mx-auto flex max-w-3xl items-center gap-3">
         <Logo churchName={churchName} size="sm" />
         <div className="min-w-0 flex-1">
-          {churchName && <p className="truncate text-sm font-medium leading-tight text-gray-500">{churchName}</p>}
+          {churchName && <p className="truncate font-name text-sm font-medium leading-tight text-gray-500">{churchName}</p>}
           <h1 className="line-clamp-2 break-words text-lg font-semibold leading-tight text-gray-900">{campusName}</h1>
         </div>
         <StatusPill kind={pill} />
