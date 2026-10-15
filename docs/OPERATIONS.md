@@ -80,7 +80,7 @@ sudo python3 scripts/updater.py apply
 
 | Symptom | Check |
 |---|---|
-| Sender "Authentication failed" | Token copied fully? Sender revoked? Church public IP changed (proxy IP rule and sender *Allowed CIDRs*)? Campus set to *local* audio (the Sender says so)? |
+| Sender "Authentication failed" | Token copied fully? Sender revoked? Church public IP changed (sender *Allowed CIDRs*)? Campus set to *local* audio (the Sender says so)? |
 | Sender connected, phones say "not connected" | Level meter flat at −120 dBFS means digital silence. Check the Dante route and the channel selected in the sender app. |
 | "Waiting for live captions…" never clears | Recent Errors → STT key/quota. Test with the `simulated` STT provider to isolate. |
 | One language missing on phones | Disabled in Languages, not enabled for that campus, or not supported by the current translation provider. |

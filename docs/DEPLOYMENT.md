@@ -1,6 +1,6 @@
 # Installation
 
-OneVoice runs with Docker Compose on any Linux server, Mac or Windows PC: a computer at the church, a mini-PC, or a VPS. It publishes three ports. Use them directly on your local network, or put a reverse proxy in front of them for HTTPS. Both setups are explained in [Ports & reverse proxy](REVERSE_PROXY.md).
+OneVoice runs with Docker Compose on any Linux server, Mac or Windows PC: a computer at the church, a mini-PC, or a VPS. It publishes three ports on your network (details in [Ports & addresses](PORTS.md)).
 
 | Port | What it serves | Who uses it |
 |---|---|---|
@@ -53,17 +53,14 @@ On macOS/Windows, any folder works; run the same commands from it.
 
 ## 3. Edit `.env`
 
-The defaults work for a quick test on the same computer (`http://localhost:8080`, `http://localhost:8081`). For real use, set these:
+The defaults work for a quick test on the same computer (`http://localhost:8080`, `http://localhost:8081`). For use from phones, set the server’s address on your network (here `192.168.1.20`):
 
-| Setting | Local setup (church network) | Reverse proxy setup (HTTPS) |
-|---|---|---|
-| `PUBLIC_BASE_URL` | `http://192.168.1.20:8080` | `https://captions.example.org` |
-| `ADMIN_ORIGIN` | `http://192.168.1.20:8081` | `https://admin.example.org` |
-| `PUBLIC_BIND` / `ADMIN_BIND` / `INGEST_BIND` | `0.0.0.0` | `127.0.0.1` (or see [Docker proxies](REVERSE_PROXY.md#proxy-running-in-docker)) |
-| `TRUSTED_PROXY_HOPS` | `0` | `1` |
-| `COOKIE_SECURE` | `false` | `true` |
+```
+PUBLIC_BASE_URL=http://192.168.1.20:8080    # what the QR codes point to
+ADMIN_ORIGIN=http://192.168.1.20:8081       # dashboard address as typed in the browser
+```
 
-`192.168.1.20` stands for the server's address on your network. `PUBLIC_BASE_URL` is what the QR codes point to. `ADMIN_ORIGIN` must exactly match how you type the dashboard address in the browser, and can list several addresses separated by commas.
+Ports and who can reach them (`PUBLIC_PORT`, `PUBLIC_BIND` and so on) are explained in [Ports & addresses](PORTS.md).
 
 ## 4. Start
 
@@ -102,14 +99,10 @@ The setup code only works while no administrator exists, so nobody else can clai
 
 ## 7. Firewall
 
-Docker opens published ports past most host firewalls (including `ufw`). So decide with `*_BIND` who can reach each port:
+Docker opens published ports past most firewalls on the server (including `ufw`). So use the `*_BIND` settings to decide who can reach each port:
 
-| Setup | Port 8080 (captions) | Port 8081 (admin) | Port 8082 (audio) |
-|---|---|---|---|
-| Local network | `0.0.0.0`: phones on the Wi-Fi | `0.0.0.0` or `127.0.0.1` (dashboard only on the server itself) | `0.0.0.0` if a Sender on another computer uses it |
-| Reverse proxy on the same server | `127.0.0.1` | `127.0.0.1` | `127.0.0.1` |
-
-On a VPS, keep SSH as the only directly open port. Let the reverse proxy be the only thing listening on 80/443.
+- `0.0.0.0` means the whole network;
+- `127.0.0.1` means only the server itself, for example `ADMIN_BIND=127.0.0.1` to keep the dashboard on the server.
 
 ## 8. Updates
 

@@ -55,7 +55,7 @@ Hardware interpretation systems and human interpreters for every language are ex
 
 - The OneVoice server runs on a **VPS** (a small cloud server).
 - The **OneVoice Sender** app runs on a computer on the **church’s local network** and sends the speech mix to the VPS.
-- Phones reach the caption site over the internet with HTTPS.
+- Phones reach the caption site over the internet.
 
 **Other setups work too:**
 
@@ -64,7 +64,6 @@ Hardware interpretation systems and human interpreters for every language are ex
 | **VPS + Sender on the church network** (what we use) | Most reliable; phones can use cellular data or Wi-Fi; easy to reach from anywhere. |
 | **Everything on one computer at the church** | No VPS cost. Run the server with Docker on the same Mac/PC as the Sender (or another machine on the network). |
 | **Local network only, plain HTTP** | Simplest. Phones on the church Wi-Fi open `http://<server-ip>:8080/campus/<campus>`. |
-| **HTTPS through a reverse proxy** | Recommended whenever it’s reachable from the internet. Any reverse proxy works: Pangolin, Caddy, Nginx, Traefik, Cloudflare Tunnel… The caption site, dashboard and audio input are separate ports (8080, 8081, 8082), so each can be exposed or kept private independently. |
 
 ## Features
 
@@ -163,10 +162,7 @@ Then add campuses, service times and a sender token, and print the QR codes.
 | **8081** | Admin dashboard | Staff |
 | **8082** | Audio input for the Sender app | The Sender at church (not needed with local audio input) |
 
-* **Local setup:** phones on the church Wi-Fi open `http://<server-ip>:8080/campus/<campus>`. This is the default.
-* **Reverse proxy setup (HTTPS):** set `PUBLIC_BIND`, `ADMIN_BIND` and `INGEST_BIND` to `127.0.0.1` in `.env` and point your proxy at `127.0.0.1:8080` / `8081` / `8082`. If the proxy runs in Docker, `127.0.0.1` is the proxy container itself: join OneVoice’s Docker networks and use `public:8080`, `admin:8081` and `ingest:8082` instead.
-
-[Ports & reverse proxy](docs/REVERSE_PROXY.md) has both setups step by step, the paths to allow publicly, and Caddy/Nginx examples.
+Phones open `http://<server-ip>:8080/campus/<campus>`. Change ports and who can reach them in `.env` (see [Ports & addresses](docs/PORTS.md)).
 
 ## Documentation
 
@@ -175,8 +171,8 @@ Then add campuses, service times and a sender token, and print the QR codes.
 | | |
 |---|---|
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Hardware (no GPU) and step-by-step install |
-| [SECURITY.md](docs/SECURITY.md) | What’s exposed, reverse-proxy allow-list, hardening |
-| [REVERSE_PROXY.md](docs/REVERSE_PROXY.md) | Ports, local setup vs. reverse proxy setup |
+| [SECURITY.md](docs/SECURITY.md) | What’s exposed and how it’s protected |
+| [PORTS.md](docs/PORTS.md) | Ports and addresses |
 | [UPDATES.md](docs/UPDATES.md) | One-click updates from GitHub |
 | [PROVIDERS_AND_PRIVACY.md](docs/PROVIDERS_AND_PRIVACY.md) | Providers, pricing, cost controls, privacy |
 | [AUDIO.md](docs/AUDIO.md) | Audio input: local interface on the server, or the Sender app |

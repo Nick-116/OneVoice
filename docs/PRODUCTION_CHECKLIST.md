@@ -12,12 +12,10 @@
 - [ ] `.env`: real `PUBLIC_BASE_URL` and `ADMIN_ORIGIN`; `COOKIE_SECURE=true` if served over HTTPS; `ADMIN_REQUIRE_MFA=true`
 - [ ] Branding set in the dashboard (name, logo, color, fonts)
 
-## Network / reverse proxy
-- [ ] Ports: `*_BIND` set for your setup (local network `0.0.0.0`; reverse proxy `127.0.0.1`), see [Ports & reverse proxy](REVERSE_PROXY.md)
-- [ ] Caption hostname allows only `/campus/*`, `/assets/*`, `/api/public/*`, `/branding/*`, `/favicon.svg`
-- [ ] Dashboard is private (proxy login/SSO, local network only, or `ADMIN_BIND=127.0.0.1`)
-- [ ] Audio input (only if using the Sender app) is reachable only from the church
-- [ ] From cellular: `POST <caption site>/api/public/config` → 405; dashboard and audio not reachable
+## Network
+- [ ] Server has a fixed address; `PUBLIC_BASE_URL` / `ADMIN_ORIGIN` use it ([Ports & addresses](PORTS.md))
+- [ ] `ADMIN_BIND` / `INGEST_BIND` limited to who needs them
+- [ ] From another device: `POST <caption site>/api/public/config` → 405
 
 ## Application
 - [ ] Setup wizard completed (first admin, MFA, providers); at least two admins exist (lockout protection)

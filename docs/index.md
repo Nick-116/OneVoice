@@ -47,7 +47,7 @@ Hardware interpretation systems and human interpreters for every language are ex
 
 - The OneVoice server runs on a **VPS** (a small cloud server).
 - The **OneVoice Sender** app runs on a computer on the **church’s local network** and sends the speech mix to the VPS.
-- Phones reach the caption site over the internet with HTTPS.
+- Phones reach the caption site over the internet.
 
 **Other setups work too:**
 
@@ -56,7 +56,6 @@ Hardware interpretation systems and human interpreters for every language are ex
 | **VPS + Sender on the church network** (what we use) | Most reliable; phones can use cellular data or Wi-Fi; easy to reach from anywhere. |
 | **Everything on one computer at the church** | No VPS cost. Run the server with Docker on the same Mac/PC as the Sender (or another machine on the network). |
 | **Local network only, plain HTTP** | Simplest. Phones on the church Wi-Fi open `http://<server-ip>:8080/campus/<campus>`. |
-| **HTTPS through a reverse proxy** | Recommended whenever it’s reachable from the internet. Any reverse proxy works: Pangolin, Caddy, Nginx, Traefik, Cloudflare Tunnel… The caption site, dashboard and audio input are separate ports (8080, 8081, 8082), so each can be exposed or kept private independently. |
 
 ## Features
 

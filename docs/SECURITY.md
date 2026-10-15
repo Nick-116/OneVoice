@@ -1,10 +1,10 @@
 # Security guide
 
-This page explains what OneVoice exposes, what protects each part, and how to keep everything except the caption pages private. Port and proxy details are in [Ports & reverse proxy](REVERSE_PROXY.md).
+This page explains what OneVoice exposes and what protects each part. Ports are listed in [Ports & addresses](PORTS.md).
 
 ## What can be reached, and what protects it
 
-| Part | Who needs it | Protection inside OneVoice (works with or without a proxy) |
+| Part | Who needs it | Protection inside OneVoice |
 |---|---|---|
 | Caption site (port 8080) | Everyone with a phone | Read-only: only `GET`/`HEAD` accepted. No database access at all. Its Redis login can only read published captions and status. Rate and connection limits. Strict Content-Security-Policy. Captions are rendered as plain text. |
 | Admin dashboard (port 8081) | Staff | Username + password (argon2id), mandatory authenticator code, session cookies that are `HttpOnly`/`SameSite=Strict` (`Secure` with HTTPS), CSRF tokens, login throttling, roles (admin/operator), audit log. |
@@ -13,24 +13,16 @@ This page explains what OneVoice exposes, what protects each part, and how to ke
 
 Each part is a separate container on its own port and network, so you can expose them independently. **Typical setup: the caption site is public, the dashboard is private, and the audio input is limited to the church.**
 
-## Keeping everything but the caption pages private
+## Keeping the dashboard and audio input private
 
-**Local setup:**
-
-- Expose only what the church network needs.
 - Set `ADMIN_BIND=127.0.0.1` if the dashboard should only open on the server itself.
+- Set `INGEST_BIND=127.0.0.1` when every campus uses local audio input (no Sender app).
 - Put guests on a Wi-Fi network separate from staff computers, if your router supports it.
-
-**Reverse proxy setup:**
-
-- Bind all three ports to `127.0.0.1` (or don’t publish them; see the [Docker proxy](REVERSE_PROXY.md#proxy-running-in-docker) option).
-- On the caption hostname, allow only `/campus/*`, `/assets/*`, `/api/public/*`, `/branding/*` and `/favicon.svg`. Block everything else, or require the proxy’s login for it.
-- Put the dashboard on a **separate hostname**, behind the proxy’s login/SSO or reachable only from the church network or a VPN.
-- If you use the Sender app, allow the audio hostname only from the church’s public IP. Also set **Allowed CIDRs** on each sender in the dashboard, so a leaked token only works from the church.
+- For each Sender, set **Allowed CIDRs** in the dashboard so its token only works from the church.
 
 ## Is that enough?
 
-**For the public caption site: yes.** Proxy rules are a second layer, not the only one. Even with no proxy at all, the caption service can’t change anything:
+**For the public caption site: yes.** The caption service can’t change anything:
 
 - it accepts only reads;
 - it has no database credentials;
@@ -41,7 +33,7 @@ The worst a stranger can do there is read the captions, which are meant to be pu
 
 **What deserves the most care:**
 
-1. **The admin dashboard.** It’s the only place settings can change. Keep it off the public internet (or behind a proxy login), give every staff member their own account with a strong password, and keep two-factor on (it’s mandatory by default). Use the **operator** role for volunteers.
+1. **The admin dashboard.** It’s the only place settings can change. Keep it off the public internet, give every staff member their own account with a strong password, and keep two-factor on (it’s mandatory by default). Use the **operator** role for volunteers.
 2. **Your GitHub account,** if you use the Updates page. It installs whatever is on the repository’s `main` branch, so anyone who can push there can change your server. Turn on GitHub two-factor authentication.
 3. **The server itself:**
    - Keep the OS updated.
@@ -55,19 +47,15 @@ The worst a stranger can do there is read the captions, which are meant to be pu
    - Nothing is translated outside service times.
 5. **Privacy of what is said.** Everything in the speech mix goes to the speech and translation providers during services, so keep private conversations off that mix. See [Providers, cost & privacy](PROVIDERS_AND_PRIVACY.md).
 
-## Checking it from outside
+## Checking it
 
-From a phone on cellular data (not church Wi-Fi), with your caption hostname:
+From another device on the network:
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://captions.example.org/campus/main          # 200
-curl -s -o /dev/null -w "%{http_code}\n" https://captions.example.org/api/public/config    # 200
-curl -s -o /dev/null -w "%{http_code}\n" -X POST https://captions.example.org/api/public/config  # 405 (read-only)
-curl -s -o /dev/null -w "%{http_code}\n" https://captions.example.org/api/overview         # blocked (not 200)
-curl -s -o /dev/null -w "%{http_code}\n" https://captions.example.org/healthz              # blocked (not 200)
+curl -s -o /dev/null -w "%{http_code}\n" http://192.168.1.20:8080/campus/main          # 200
+curl -s -o /dev/null -w "%{http_code}\n" -X POST http://192.168.1.20:8080/api/public/config  # 405 (read-only)
+curl -s -o /dev/null -w "%{http_code}\n" http://192.168.1.20:8080/api/overview         # 404 (no admin API here)
 ```
-
-Then open a campus page and confirm captions load. The browser’s developer console should show no blocked requests.
 
 ## Reporting a vulnerability
 

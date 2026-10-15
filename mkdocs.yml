@@ -49,7 +49,7 @@ nav:
   - Home: index.md
   - Getting started:
       - Installation: DEPLOYMENT.md
-      - Ports & reverse proxy: REVERSE_PROXY.md
+      - Ports & addresses: PORTS.md
       - Audio input: AUDIO.md
       - Sender app: SENDER.md
       - Updates: UPDATES.md

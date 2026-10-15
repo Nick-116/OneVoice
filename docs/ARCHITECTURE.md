@@ -19,12 +19,12 @@
 
 | Concern | Where it is enforced |
 |---|---|
-| Only the caption site is public | Separate containers, ports (`*_BIND`) and Docker networks; optional reverse-proxy allow-list |
+| Only the caption site is public | Separate containers, ports (`*_BIND`) and Docker networks |
 | Public API is read-only | Method allow-list middleware (GET/HEAD only); no DB credentials; Redis ACL allows reads + viewer counters only; no admin code routes |
 | Captions only during services | Worker starts/stops pipelines from the schedule; ingest forwards audio only while `campus:live:<id>` exists; public refuses streams unless status is live and closes them when it ends |
 | Campus isolation | Audio keyed by campus id from the authenticated sender token (never client-supplied); separate channels `cap:<slug>:<lang>`; tests verify no cross-delivery |
-| Admin authorization | App sessions + TOTP + CSRF + roles, independent of any proxy login |
-| Unauthorized audio injection | Optional proxy IP rules, sender tokens (SHA-256 hashed, revocable instantly), per-sender CIDR allowlist, frame size and byte-rate limits, one active connection per campus |
+| Admin authorization | App sessions + TOTP + CSRF + roles |
+| Unauthorized audio injection | Sender tokens (SHA-256 hashed, revocable instantly), per-sender CIDR allowlist, frame size and byte-rate limits, one active connection per campus |
 
 ## Why Redis
 

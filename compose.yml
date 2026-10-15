@@ -8,7 +8,7 @@
 #   8081  admin dashboard           (ADMIN_PORT,  ADMIN_BIND)
 #   8082  audio input for the Sender app (INGEST_PORT, INGEST_BIND)
 # *_BIND=0.0.0.0  -> reachable on your network (local setup)
-# *_BIND=127.0.0.1 -> only this machine, e.g. for a reverse proxy on the same server
+# *_BIND=127.0.0.1 -> only this computer
 #
 # Networks: postgres and redis sit on internal networks with no route outside.
 # Each published service has its own network, so the caption site cannot reach the

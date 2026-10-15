@@ -196,7 +196,7 @@ Occurrence exceptions (operators allowed): `POST /api/occurrences/cancel {key}` 
 `wss://audio.example.com/ingest/v1/stream?sample_rate=16000&channels=1&format=s16le`
 
 * Header `Authorization: Bearer cs_<32 hex>_<secret>` (token from Admin → Audio senders). Invalid/revoked/IP-not-allowed → handshake rejected (HTTP 403).
-* Any extra headers a reverse proxy needs (e.g. an access-token header) may be added by the sender.
+* The sender may add extra HTTP headers if something in front of the server requires them.
 * Client → server: binary frames, raw signed 16-bit little-endian mono PCM, ≤ 32 000 bytes each (send 100 ms = 3 200 bytes at 16 kHz). Byte rate above 3× real time → disconnected.
 * Server → client: text JSON every 2 s `{"type":"status","live":bool,"campus":"slug","server_time":..}`. `live:false` = outside a service window (audio only feeds the level meter).
 * Silence for 15 s with no frames → server closes (4008). Close code 4009 = replaced by a newer connection from the same campus; 4003 = revoked.
