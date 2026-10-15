@@ -11,7 +11,7 @@ Sends the speech mix from your sound board (Dante Virtual Soundcard, a Dante AVI
 
 ### First launch
 These builds are not yet signed with paid Apple / Microsoft certificates, so your computer asks once before opening them:
-- **macOS:** open the DMG and drag the app to Applications. The first time, **right-click the app → Open → Open** (or System Settings → Privacy & Security → *Open Anyway*). Allow microphone access when asked.
+- **macOS:** open the DMG and drag the app to Applications. Open it once and click **Done** on the warning. Then go to **System Settings → Privacy & Security** and click **Open Anyway** next to *“OneVoice Sender” was blocked*. Allow microphone access when asked.
 - **Windows:** if SmartScreen says *Windows protected your PC*, click **More info → Run anyway**.
 
 Then paste your server address and the sender token from the OneVoice admin dashboard (**Audio → Senders**), choose the input and channel, and click **Start streaming**.

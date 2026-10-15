@@ -125,7 +125,7 @@ The Sender captures one channel of an audio input, such as Dante Virtual Soundca
 
 **First launch:** the apps aren’t signed with paid Apple/Microsoft certificates yet, so your computer asks once:
 
-- **macOS:** right-click the app → **Open** → **Open**.
+- **macOS:** open the app once and click **Done** on the warning. Then go to **System Settings → Privacy & Security**, scroll to *“OneVoice Sender” was blocked*, click **Open Anyway** and confirm. That's needed once per Mac. On macOS 14 and earlier, right-click the app → **Open** also works.
 - **Windows:** in the SmartScreen prompt, click **More info → Run anyway**.
 
 The release pipeline signs and notarizes automatically once certificates are added; see [.github/workflows/release.yml](.github/workflows/release.yml).
