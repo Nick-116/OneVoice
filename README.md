@@ -154,4 +154,6 @@ Then add campuses, service times and a sender token, and print the QR codes.
 * **Congregation:** no accounts, cookies or tracking.
 * **Not in Git:** `.env`, `secrets/`, backups and updater state are in `.gitignore`. API keys, the church name and logo live in your database. A secret scanner runs on every push.
 
-Fonts bundled with the caption site are under the SIL Open Font License.
+## License
+
+OneVoice is released under the [MIT License](LICENSE). Fonts bundled with the caption site are under the SIL Open Font License.
