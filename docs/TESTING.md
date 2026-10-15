@@ -41,7 +41,7 @@ The simulated STT releases words at speaking pace *only while audio is arriving*
 * Against a deployment, use `loadtest/sse_load.py` during a live or simulated service:
   ```bash
   pip install httpx==0.28.1
-  python loadtest/sse_load.py --base https://captions.example.com --campus east-hartford --viewers 300 --langs en,es,pt,ht --duration 120
+  python loadtest/sse_load.py --base http://<server-ip>:8080 --campus main --viewers 300 --langs en,es,pt,ht --duration 120
   ```
   It reports connected viewers, captions received per viewer and delivery delay percentiles.
 * The per-IP limit defaults to 400 streams, which suits church Wi-Fi behind one NAT. Spread larger tests across several client machines.

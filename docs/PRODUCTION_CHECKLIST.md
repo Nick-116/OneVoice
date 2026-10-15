@@ -9,7 +9,7 @@
 ## Secrets & configuration
 - [ ] `./scripts/generate-secrets.sh` run; `secrets/` is mode 700 and **not** in git
 - [ ] `secrets/` and nightly `backups/` copied off-server
-- [ ] `.env`: real `PUBLIC_BASE_URL` and `ADMIN_ORIGIN`; `COOKIE_SECURE=true` if served over HTTPS; `ADMIN_REQUIRE_MFA=true`
+- [ ] `.env`: real `PUBLIC_BASE_URL` and `ADMIN_ORIGIN`; `ADMIN_REQUIRE_MFA=true`
 - [ ] Branding set in the dashboard (name, logo, color, fonts)
 
 ## Network

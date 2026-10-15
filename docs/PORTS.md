@@ -43,12 +43,3 @@ INGEST_BIND=0.0.0.0
 Run `docker compose up -d` after changing `.env`.
 
 Docker opens published ports past most firewalls on the server (including `ufw`). Use `*_BIND` to control who can reach each port.
-
-## Behind HTTPS
-
-OneVoice serves plain HTTP. If you put HTTPS in front of it, set two values:
-
-- `COOKIE_SECURE=true`, so dashboard sign-in cookies are HTTPS-only;
-- `TRUSTED_PROXY_HOPS=1`, so OneVoice sees phones’ real addresses.
-
-Also set `PUBLIC_BASE_URL` and `ADMIN_ORIGIN` to the `https://` addresses.

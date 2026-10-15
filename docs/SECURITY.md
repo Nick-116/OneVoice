@@ -7,7 +7,7 @@ This page explains what OneVoice exposes and what protects each part. Ports are 
 | Part | Who needs it | Protection inside OneVoice |
 |---|---|---|
 | Caption site (port 8080) | Everyone with a phone | Read-only: only `GET`/`HEAD` accepted. No database access at all. Its Redis login can only read published captions and status. Rate and connection limits. Strict Content-Security-Policy. Captions are rendered as plain text. |
-| Admin dashboard (port 8081) | Staff | Username + password (argon2id), mandatory authenticator code, session cookies that are `HttpOnly`/`SameSite=Strict` (`Secure` with HTTPS), CSRF tokens, login throttling, roles (admin/operator), audit log. |
+| Admin dashboard (port 8081) | Staff | Username + password (argon2id), mandatory authenticator code, session cookies that are `HttpOnly`/`SameSite=Strict`, CSRF tokens, login throttling, roles (admin/operator), audit log. |
 | Audio input (port 8082) | The OneVoice Sender at church | Per-campus sender tokens (hashed, revocable instantly), optional IP allow-list per sender, frame-size and byte-rate limits, one connection per campus. Not needed at all with **local audio input**. |
 | Database, Redis, worker | Nobody | Internal Docker networks only, never published, a separate least-privilege login per service. |
 
