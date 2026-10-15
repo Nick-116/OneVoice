@@ -22,10 +22,10 @@ Admin dashboard ──writes──► ./updater/request.json  {"action": "check"
 
 ## Install the updater on the VPS
 
-The app should be a `git clone` of your repository, e.g. in `/opt/church-captions`.
+The app should be a `git clone` of your repository, e.g. in `/opt/onevoice`.
 
 ```bash
-cd /opt/church-captions
+cd /opt/onevoice
 sudo cp deploy/updater/onevoice-updater.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now onevoice-updater
@@ -34,7 +34,7 @@ sudo systemctl status onevoice-updater     # should say "active (running)"
 
 The Updates page should show **Updater: Running on the server** within a few seconds. The updater checks GitHub automatically every 6 hours, and on demand with **Check now**.
 
-If the app lives somewhere other than `/opt/church-captions`, edit `WorkingDirectory` and `ExecStart` in the service file before copying it.
+If the app lives somewhere other than `/opt/onevoice`, edit `WorkingDirectory` and `ExecStart` in the service file before copying it.
 
 Manual use (same thing the service does):
 ```bash

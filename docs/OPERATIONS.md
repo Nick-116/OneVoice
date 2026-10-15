@@ -48,7 +48,7 @@ Only PostgreSQL holds durable data. Redis is intentionally ephemeral.
 
 ```bash
 ./scripts/backup.sh                                   # backups/captions-YYYYmmdd-HHMMSS.sql.gz (keeps 14 days)
-crontab -e   # 15 3 * * * cd /opt/church-captions && ./scripts/backup.sh >> backups/backup.log 2>&1
+crontab -e   # 15 3 * * * cd /opt/onevoice && ./scripts/backup.sh >> backups/backup.log 2>&1
 ```
 
 Copy `backups/` **and** `secrets/` off the server, e.g. with `rclone` to cloud storage or your provider's snapshots.

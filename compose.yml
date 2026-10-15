@@ -1,4 +1,4 @@
-# Church live captions - production deployment.
+# OneVoice - production deployment.
 #
 # Nothing here publishes a port on the host. The only way in is through your
 # Pangolin server via the `newt` tunnel container, which can reach exactly

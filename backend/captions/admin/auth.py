@@ -253,7 +253,7 @@ async def mfa_setup(ctx: AuthContext = Depends(load_auth), db: AsyncSession = De
     secret = pyotp.random_base32()
     ctx.user.totp_secret_enc = encrypt_secret(secret)
     await db.commit()
-    uri = pyotp.TOTP(secret).provisioning_uri(name=ctx.user.username, issuer_name="Church Captions")
+    uri = pyotp.TOTP(secret).provisioning_uri(name=ctx.user.username, issuer_name="OneVoice")
     qr = segno.make(uri, error="m")
     buf = io.BytesIO()
     # Standalone SVG with xmlns: the dashboard shows it as a data: image, which requires the namespace.

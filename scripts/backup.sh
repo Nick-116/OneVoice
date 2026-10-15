@@ -2,7 +2,7 @@
 # Nightly PostgreSQL backup. Keeps 14 days by default.
 #   scripts/backup.sh            -> backups/captions-YYYYmmdd-HHMMSS.sql.gz
 # Cron (as the deploy user):
-#   15 3 * * * cd /opt/church-captions && ./scripts/backup.sh >> backups/backup.log 2>&1
+#   15 3 * * * cd /opt/onevoice && ./scripts/backup.sh >> backups/backup.log 2>&1
 set -euo pipefail
 cd "$(dirname "$0")/.."
 KEEP_DAYS="${KEEP_DAYS:-14}"

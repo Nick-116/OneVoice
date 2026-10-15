@@ -39,9 +39,9 @@ Docker can bypass ufw for *published* ports. This stack publishes **none**, so t
 ## 2. Install the application
 
 ```bash
-sudo mkdir -p /opt/church-captions && sudo chown "$USER" /opt/church-captions
-git clone https://github.com/Nick-116/OneVoice.git /opt/church-captions
-cd /opt/church-captions
+sudo mkdir -p /opt/onevoice && sudo chown "$USER" /opt/onevoice
+git clone https://github.com/Nick-116/OneVoice.git /opt/onevoice
+cd /opt/onevoice
 
 ./scripts/generate-secrets.sh          # creates ./secrets/* (random DB/Redis passwords, app secret)
 cp .env.example .env && nano .env      # set domains + Newt credentials

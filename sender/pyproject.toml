@@ -1,5 +1,5 @@
 [project]
-name = "church-captions-sender"
+name = "onevoice-sender"
 version = "1.0.0"
 description = "Church audio sender: Dante/USB input channel -> WSS ingest for live captions"
 requires-python = ">=3.11"
