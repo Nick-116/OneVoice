@@ -42,7 +42,7 @@ jobs:
       - name: Version
         run: echo "ONEVOICE_VERSION=$(cat ../VERSION)" >> "$GITHUB_ENV"
       - name: Install
-        run: pip install -r requirements.txt pyinstaller==6.11.1 pytest==8.3.3 pytest-asyncio==0.24.0
+        run: pip install -r requirements.txt pyinstaller==6.22.3 pyinstaller-hooks-contrib==2026.8 pytest==8.3.3 pytest-asyncio==0.24.0
       - name: Test
         run: python -m pytest -q
       - name: Import signing certificate
@@ -107,7 +107,7 @@ jobs:
       - name: Version
         run: '"ONEVOICE_VERSION=$((Get-Content ../VERSION).Trim())" | Out-File -FilePath $env:GITHUB_ENV -Append'
       - name: Install
-        run: pip install -r requirements.txt pyinstaller==6.11.1 pytest==8.3.3 pytest-asyncio==0.24.0
+        run: pip install -r requirements.txt pyinstaller==6.22.3 pyinstaller-hooks-contrib==2026.8 pytest==8.3.3 pytest-asyncio==0.24.0
       - name: Test
         run: python -m pytest -q
       - name: Build app
