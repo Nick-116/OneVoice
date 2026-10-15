@@ -91,7 +91,7 @@ class CampusPipeline:
         self.state = PipelineState()
         self.channels: dict[str, LanguageChannel] = {}
         self._channel_last_viewed: dict[str, float] = {}
-        self.segmenter = Segmenter()
+        self.segmenter = Segmenter(early_commit=stt.early_commit)
         self.recent_finals: deque[SourceSegment] = deque(maxlen=3)
         self._transcript_queue: asyncio.Queue[tuple[str, int, str]] = asyncio.Queue(maxsize=2000)
         self._task: asyncio.Task | None = None

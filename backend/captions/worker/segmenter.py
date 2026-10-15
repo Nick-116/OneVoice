@@ -14,6 +14,13 @@ Strategy for low flicker without showing unstable text as final:
   built up, it is cut at the last clause break (comma, semicolon, colon, dash)
   so translation can start mid-sentence. Same characters, so no extra cost.
 * A run-on with no clause break is split at a word boundary.
+* Early commit: providers like Deepgram only mark words stable every few
+  seconds during continuous speech. Words at the start of the interim that two
+  interims in a row agree on (never the last, possibly cut-off word) are
+  treated as stable right away, so sentences and clauses can be finalized
+  and translated seconds sooner. When the provider's own stable text for that
+  stretch arrives, the words already taken are skipped. Only for providers
+  whose interims use the same wording as their stable text (Deepgram).
 """
 
 from __future__ import annotations
@@ -37,23 +44,43 @@ class Segment:
 
 
 class Segmenter:
-    def __init__(self, max_chars: int = 140, clause_chars: int = 60, start_seq: int = 1) -> None:
+    def __init__(self, max_chars: int = 140, clause_chars: int = 60, start_seq: int = 1, early_commit: bool = True) -> None:
         self.max_chars = max_chars
+        self.early_commit = early_commit
         self.clause_chars = clause_chars
         self.seq = start_seq
         self.committed = ""
         self.interim = ""
+        self._prev_interim: list[str] = []  # previous interim, as words
+        self._taken = 0  # words of the current interim stretch already moved into committed
         self._last_partial: tuple[int, str] | None = None
 
     # -- provider events -------------------------------------------------
     def on_interim(self, text: str, audio_end: float | None = None) -> list[Segment]:
-        self.interim = text.strip()
-        return self._partial(audio_end)
+        if not self.early_commit:
+            self.interim = text.strip()
+            return self._partial(audio_end)
+        words = text.split()
+        agreed = 0
+        for a, b in zip(self._prev_interim, words[:-1]):
+            if a != b:
+                break
+            agreed += 1
+        self._prev_interim = words
+        out: list[Segment] = []
+        if agreed > self._taken:
+            self._append(" ".join(words[self._taken : agreed]))
+            self._taken = agreed
+            out = self._cut_sentences(audio_end)
+        self.interim = " ".join(words[self._taken :])
+        out.extend(self._partial(audio_end))
+        return out
 
     def on_stable(self, text: str, audio_end: float | None = None) -> list[Segment]:
-        text = text.strip()
-        if text:
-            self.committed = f"{self.committed} {text}".strip() if self.committed else text
+        # Skip the words already taken early from this stretch's interims.
+        self._append(" ".join(text.split()[self._taken :]))
+        self._taken = 0
+        self._prev_interim = []
         self.interim = ""
         out = self._cut_sentences(audio_end)
         out.extend(self._partial(audio_end))
@@ -66,6 +93,11 @@ class Segmenter:
             self.committed = ""
         out.extend(self._partial(audio_end))
         return out
+
+    def _append(self, text: str) -> None:
+        text = text.strip()
+        if text:
+            self.committed = f"{self.committed} {text}" if self.committed else text
 
     def flush(self) -> list[Segment]:
         """End of stream: finalize whatever is stable; drop unstable interim."""

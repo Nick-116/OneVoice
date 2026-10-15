@@ -48,6 +48,7 @@ Assumptions: 2 campuses × ~6 service-hours/week ≈ 52 hours/month. Speech runs
 * **Partial vs final:**
   - Partials are shown in grey on the same line and replaced in place by the final version, so nothing unstable is presented as final.
   - A caption line becomes final when the provider marks it stable and it ends in punctuation, at a speaker pause, or once ~60 characters have built up and there is a clause break (comma, semicolon, colon or dash) to cut at. Long sentences are translated in pieces instead of waiting for the period. A run-on with no break is split at a space after ~140 characters.
+  - With Deepgram, words count as stable as soon as two live updates in a row agree on them, instead of waiting the few seconds Deepgram takes to confirm them during continuous speech. That's what lets translations follow about a second behind the English. Each piece is still translated once.
 * **Translated viewers get each finalized sentence** about 1.5–4 s after it's spoken: STT finalization plus one translation round trip of ~100–300 ms.
 * **Metrics:** the dashboard shows measured p50/p95 for STT partials, STT finals, translation round trips, and audio-to-translated-caption end to end, per language.
 

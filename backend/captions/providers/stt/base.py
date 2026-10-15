@@ -54,6 +54,9 @@ class STTSession(abc.ABC):
 
 class STTProvider(abc.ABC):
     name: str = "base"
+    # True when each interim covers the whole not-yet-stable stretch in the same wording the
+    # stable text will use, so the segmenter may take agreed words early (see segmenter.py).
+    early_commit: bool = False
 
     @abc.abstractmethod
     async def open(self, *, sample_rate: int, language: str) -> STTSession: ...

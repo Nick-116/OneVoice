@@ -47,10 +47,8 @@ class DeepgramSession(STTSession):
                     text = (alts[0].get("transcript") or "").strip()
                     end = float(msg.get("start", 0.0)) + float(msg.get("duration", 0.0))
                     if msg.get("is_final"):
-                        if text:
-                            yield STTEvent("stable", text, end)
-                        else:
-                            yield STTEvent("interim", "", end)
+                        # Even an empty final closes the stretch (the segmenter resets its early-commit state).
+                        yield STTEvent("stable", text, end)
                         if msg.get("speech_final"):
                             yield STTEvent("endpoint", audio_end=end)
                     else:
@@ -76,6 +74,7 @@ class DeepgramSession(STTSession):
 
 class DeepgramProvider(STTProvider):
     name = "deepgram"
+    early_commit = True
 
     def __init__(self, api_key: str, settings: dict[str, Any]) -> None:
         self.api_key = api_key

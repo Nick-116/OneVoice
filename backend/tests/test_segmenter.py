@@ -76,3 +76,65 @@ def test_early_comma_is_not_used_as_a_cut():
     seg = Segmenter()
     out = seg.on_stable("Well, we are going to look at the passage that we read together last week")
     assert not [s for s in out if s.final]
+
+
+def finals(segs):
+    return [s.text for s in segs if s.final]
+
+
+def test_agreed_interim_words_finalize_a_sentence_before_the_provider_does():
+    s = Segmenter()
+    # Deepgram-style interims: each covers the whole not-yet-final stretch and grows.
+    assert finals(s.on_interim("The Lord is my shepherd.")) == []
+    out = s.on_interim("The Lord is my shepherd. I shall")
+    assert finals(out) == ["The Lord is my shepherd."]  # agreed twice -> final now, not at is_final
+    assert texts(out)[-1] == (2, "I shall", False)
+    # The provider's final for the stretch arrives later; already-taken words are skipped.
+    out = s.on_stable("The Lord is my shepherd. I shall not want.")
+    assert finals(out) == ["I shall not want."]
+
+
+def test_last_interim_word_is_never_taken_early():
+    s = Segmenter()
+    s.on_interim("For God so loved the wor")
+    s.on_interim("For God so loved the wor")
+    assert s.committed == "For God so loved the"
+    s.on_interim("For God so loved the world, that he gave")
+    assert s.committed == "For God so loved the"  # "wor" changed to "world," so it stops there
+
+
+def test_revised_interim_is_not_taken():
+    s = Segmenter()
+    s.on_interim("we read in Mark")
+    s.on_interim("we read in Mark chapter")
+    assert s.committed == "we read in Mark"
+    s.on_interim("we read in Luke chapter four")  # earlier words revised after being taken
+    assert s.committed == "we read in Mark"
+    assert texts(s._partial(None)) == []  # nothing new to show twice
+
+
+def test_empty_stable_resets_the_stretch():
+    s = Segmenter()
+    s.on_interim("Amen and amen")
+    s.on_interim("Amen and amen")
+    assert s.committed == "Amen and"
+    s.on_stable("")
+    s.on_endpoint()
+    s.on_interim("Please be seated")
+    s.on_interim("Please be seated now")
+    assert s.committed == "Please be seated"
+
+
+def test_long_clause_from_interims_is_translated_mid_sentence():
+    s = Segmenter()
+    line = "In the beginning God created the heavens and the earth, and the earth was without form"
+    s.on_interim(line)
+    out = s.on_interim(line + " and void")
+    assert finals(out) == ["In the beginning God created the heavens and the earth,"]
+
+
+def test_early_commit_can_be_turned_off():
+    s = Segmenter(early_commit=False)
+    s.on_interim("The Lord is my shepherd. I shall")
+    assert finals(s.on_interim("The Lord is my shepherd. I shall not")) == []
+    assert finals(s.on_stable("The Lord is my shepherd.")) == ["The Lord is my shepherd."]
