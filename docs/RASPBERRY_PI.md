@@ -16,18 +16,26 @@ You set it up from a web page on the Pi, which has the same settings and level m
 
 ## 1. Flash the image
 
-1. Download `OneVoiceSender-<version>-RaspberryPi.img.xz` from the [latest release](https://github.com/Nick-116/OneVoice/releases/latest).
-2. Install and open [Raspberry Pi Imager](https://www.raspberrypi.com/software/).
+Raspberry Pi Imager only lets you set a username and password for images it knows about. So instead of picking the downloaded file, point Imager at the OneVoice listing once:
+
+1. Install and open [Raspberry Pi Imager](https://www.raspberrypi.com/software/) (version 2 or newer).
+2. Open **App Options** (bottom left), then **Content Repository → Edit**, choose **Use custom URL** and enter:
+   ```
+   https://github.com/Nick-116/OneVoice/releases/latest/download/onevoice-imager.json
+   ```
+   If your Imager only offers **Use custom file**, download that file first and pick it. Imager forgets this setting when it closes, so repeat this step each time you flash a card.
 3. **Choose Device:** your Pi model.
-4. **Choose OS:** scroll down to **Use custom** and pick the downloaded `.img.xz` file. No need to unzip it.
+4. **Choose OS:** **OneVoice Sender**. Imager downloads the image itself.
 5. **Choose Storage:** your microSD card.
-6. Click **Next**, then **Edit settings** when asked about OS customisation. This step is required:
-   - **Set hostname:** `onevoice-sender`. If you have several Pis, use `onevoice-sender-north` and so on.
-   - **Set username and password:** you sign in to the web page with these. The image ships with no default password, so without this step you can't sign in.
-   - **Configure wireless LAN:** only if you can't use Ethernet.
-   - **Set locale settings:** your time zone.
-   - **Services → Enable SSH:** optional, only needed for troubleshooting.
-7. Click **Save**, then **Yes** to apply the settings, and write the card.
+6. In the customisation step, set:
+   - **Hostname:** `onevoice-sender`. If you have several Pis, use `onevoice-sender-north` and so on.
+   - **Username and password:** you sign in to the web page with these. This is required: the image ships with no default password, so without it nobody can sign in.
+   - **Wi-Fi:** only if you can't use Ethernet.
+   - **Locale:** your time zone.
+   - **SSH:** optional, only needed for troubleshooting.
+7. Write the card.
+
+Don't pick the downloaded `.img.xz` with **Use custom** instead. Imager then greys out the customisation settings, and you'd end up with a Pi you can't sign in to.
 
 ## 2. First boot
 

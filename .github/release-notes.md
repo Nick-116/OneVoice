@@ -8,7 +8,8 @@ Sends the speech mix from your sound board (Dante Virtual Soundcard, a Dante AVI
 | `OneVoiceSender-*-macOS-Intel.dmg` | Intel Macs |
 | `OneVoiceSender-*-Windows-Setup.exe` | Windows 10/11 installer (recommended) |
 | `OneVoiceSender-*-Windows-Portable.zip` | Windows, no install (unzip and run) |
-| `OneVoiceSender-*-RaspberryPi.img.xz` | Raspberry Pi 4/5 with a USB audio input: flash with Raspberry Pi Imager, then open http://onevoice-sender.local ([guide](https://nick-116.github.io/OneVoice/RASPBERRY_PI/)) |
+| `OneVoiceSender-*-RaspberryPi.img.xz` | Raspberry Pi 4/5 with a USB audio input. In Raspberry Pi Imager use **App Options → Content Repository → Use custom URL** with `https://github.com/Nick-116/OneVoice/releases/latest/download/onevoice-imager.json` so you can set a username and password, then open http://onevoice-sender.local ([guide](https://nick-116.github.io/OneVoice/RASPBERRY_PI/)) |
+| `onevoice-imager.json` | The Raspberry Pi Imager listing for the image above |
 
 ### First launch
 These builds are not yet signed with paid Apple / Microsoft certificates, so your computer asks once before opening them:

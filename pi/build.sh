@@ -1,7 +1,7 @@
 #!/bin/bash -e
 # Builds the OneVoice Sender Raspberry Pi image with pi-gen (Raspberry Pi's own image builder).
 # Needs Linux with Docker; an arm64 machine builds natively (CI uses GitHub's arm64 runner).
-# Output: pi/dist/OneVoiceSender-<version>-RaspberryPi.img.xz
+# Output: pi/dist/OneVoiceSender-<version>-RaspberryPi.img.xz and pi/dist/onevoice-imager.json
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PIGEN_REF="2026-09-15-raspios-trixie-arm64"
@@ -25,5 +25,8 @@ find "$APP" -name '__pycache__' -prune -exec rm -rf {} +
 ./build-docker.sh
 
 IMG="$(ls -t deploy/*.img.xz | head -1)"
-mv "$IMG" "$ROOT/pi/dist/OneVoiceSender-${VERSION}-RaspberryPi.img.xz"
+OUT="$ROOT/pi/dist/OneVoiceSender-${VERSION}-RaspberryPi.img.xz"
+mv "$IMG" "$OUT"
+# Listing for Raspberry Pi Imager, so "Edit settings" (username, password, Wi-Fi) is available.
+python3 "$ROOT/pi/imager_manifest.py" "$OUT" "$VERSION" "$ROOT/pi/dist/onevoice-imager.json"
 ls -lh "$ROOT/pi/dist"

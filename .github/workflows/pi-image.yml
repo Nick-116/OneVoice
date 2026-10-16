@@ -21,6 +21,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: raspberry-pi
-          path: pi/dist/*.img.xz
+          path: |
+            pi/dist/*.img.xz
+            pi/dist/onevoice-imager.json
           compression-level: 0  # already xz-compressed
           if-no-files-found: error
