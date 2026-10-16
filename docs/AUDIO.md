@@ -5,7 +5,7 @@ Each campus takes its speech mix from one of two sources, chosen in **Campuses â
 | Source | Use it when | How it connects |
 |---|---|---|
 | **Local input on this server** (default) | The OneVoice server is at the church and has the audio interface plugged in (USB interface, Dante AVIO adapter, Dante Virtual Soundcard on Linux). | The `local-audio` service captures the chosen device and channel directly. There is no network hop and no token. |
-| **Remote sender app** | The server is a VPS (or any machine without the audio), and a computer at church has the audio. | The **OneVoice Sender** app streams the chosen channel to the server's audio input (port 8082) using a per-campus token. |
+| **Remote sender app** | The server is a VPS (or any machine without the audio), and a computer or [Raspberry Pi](RASPBERRY_PI.md) at church has the audio. | The **OneVoice Sender** app (or the Raspberry Pi image) streams the chosen channel to the server's audio input (port 8082) using a per-campus token. |
 
 Only one source is used per campus. A campus set to *local* refuses Sender connections, and the Sender shows a message explaining why. Campuses that already had a Sender when this option was added were switched to *remote* automatically.
 

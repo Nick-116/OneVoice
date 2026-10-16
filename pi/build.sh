@@ -4,7 +4,7 @@
 # Output: pi/dist/OneVoiceSender-<version>-RaspberryPi.img.xz
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PIGEN_REF="2026-09-15-raspios-bookworm-arm64"
+PIGEN_REF="2026-09-15-raspios-trixie-arm64"
 WORK="${WORK:-$ROOT/pi/work}"
 VERSION="$(cat "$ROOT/VERSION")"
 

@@ -134,3 +134,20 @@ def test_file_keyring_is_private(tmp_path):
         assert stat.S_IMODE(path.stat().st_mode) == 0o600
     k.delete_password("onevoice-sender", "sender-token")
     assert k.get_password("onevoice-sender", "sender-token") is None
+
+
+@pytest.mark.skipif(not os.path.exists("/etc/shadow"), reason="Linux only")
+def test_system_authenticator_checks_shadow_and_group(tmp_path, monkeypatch):
+    import grp
+    import pwd
+
+    me = pwd.getpwuid(os.getuid())
+    group = grp.getgrgid(me.pw_gid).gr_name
+    stored = webserver._crypt("right-password", "$6$onevoicetestsalt$")
+    shadow = tmp_path / "shadow"
+    shadow.write_text(f"{me.pw_name}:{stored}:19000:0:99999:7:::\nlocked:!:19000::::::\n")
+    check = webserver.system_authenticator(group, shadow_path=str(shadow))
+    assert check(me.pw_name, "right-password") is (me.pw_uid != 0)
+    assert check(me.pw_name, "wrong") is False
+    assert check("locked", "") is False
+    assert webserver.system_authenticator("no-such-group-xyz", shadow_path=str(shadow))(me.pw_name, "right-password") is False

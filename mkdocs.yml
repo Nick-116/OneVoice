@@ -52,6 +52,7 @@ nav:
       - Ports & addresses: PORTS.md
       - Audio input: AUDIO.md
       - Sender app: SENDER.md
+      - Raspberry Pi sender: RASPBERRY_PI.md
       - Updates: UPDATES.md
   - Security:
       - Security guide: SECURITY.md

@@ -1,6 +1,8 @@
 # pi-gen settings for the OneVoice Sender image (see build.sh and .github/workflows/release.yml).
 IMG_NAME=OneVoiceSender
-RELEASE=bookworm
+RELEASE=trixie
+# cloud-init: how Raspberry Pi Imager 2 applies the username, password and Wi-Fi you set when flashing.
+ENABLE_CLOUD_INIT=1
 TARGET_HOSTNAME=onevoice-sender
 LOCALE_DEFAULT=en_US.UTF-8
 KEYBOARD_KEYMAP=us

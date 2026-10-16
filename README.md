@@ -114,7 +114,7 @@ OneVoice doesn’t run AI models itself. It uses **external speech-to-text and t
 
 The provider system is modular: a self-hosted speech or translation model can be added later as a single class.
 
-## Downloads: OneVoice Sender (Mac and Windows)
+## Downloads: OneVoice Sender (Mac, Windows and Raspberry Pi)
 
 Get the latest from **[Releases](https://github.com/Nick-116/OneVoice/releases/latest)**:
 
@@ -124,6 +124,7 @@ Get the latest from **[Releases](https://github.com/Nick-116/OneVoice/releases/l
 | `OneVoiceSender-…-macOS-Intel.dmg` | Intel Macs |
 | `OneVoiceSender-…-Windows-Setup.exe` | Windows 10/11 installer |
 | `OneVoiceSender-…-Windows-Portable.zip` | Windows without installing |
+| `OneVoiceSender-…-RaspberryPi.img.xz` | Raspberry Pi 4/5 with a USB audio input: flash it, set it up in a browser ([guide](docs/RASPBERRY_PI.md)) |
 
 The Sender captures one channel of an audio input, such as Dante Virtual Soundcard, a Dante AVIO USB adapter or any audio interface. It shows a live level meter and sends the audio to your OneVoice server. It reconnects automatically and can start when the computer boots.
 
@@ -181,6 +182,7 @@ Phones open `http://<server-ip>:8080/campus/<campus>`. Change ports and who can 
 | [TESTING.md](docs/TESTING.md) | Test suites, simulated mode, load testing |
 | [PRODUCTION_CHECKLIST.md](docs/PRODUCTION_CHECKLIST.md) | Before your first live service |
 | [sender/README.md](sender/README.md) | Sender app, Dante setup, building from source |
+| [RASPBERRY_PI.md](docs/RASPBERRY_PI.md) | Raspberry Pi sender: flash, set up in a browser, troubleshoot |
 
 ## Privacy and what’s never in this repository
 

@@ -56,7 +56,28 @@ SECURITY_HEADERS = {
 Authenticator = Callable[[str, str], bool]
 
 
-def system_authenticator(group: str) -> Authenticator:
+def _shadow_hash(username: str, path: str = "/etc/shadow") -> str | None:
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            parts = line.rstrip("\n").split(":")
+            if len(parts) > 1 and parts[0] == username:
+                return parts[1]
+    return None
+
+
+def _crypt(password: str, setting: str) -> str:
+    """crypt(3) from libcrypt (yescrypt on Raspberry Pi OS). Python 3.13 removed the crypt module."""
+    import ctypes
+    import ctypes.util
+
+    lib = ctypes.CDLL(ctypes.util.find_library("crypt") or "libcrypt.so.1")
+    lib.crypt.restype = ctypes.c_char_p
+    lib.crypt.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+    out = lib.crypt(password.encode(), setting.encode())
+    return out.decode() if out else ""
+
+
+def system_authenticator(group: str, shadow_path: str = "/etc/shadow") -> Authenticator:
     """Check a Linux account password against /etc/shadow; the user must be in ``group``.
 
     The service user is in the ``shadow`` group (read-only access). PAM can't be used:
@@ -64,25 +85,23 @@ def system_authenticator(group: str) -> Authenticator:
     """
     import grp
     import pwd
-    import warnings
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)  # crypt/spwd: fine on Python 3.11 (Bookworm)
-        import crypt
-        import spwd
+    lock = threading.Lock()  # crypt(3) uses a static buffer
 
     def check(username: str, password: str) -> bool:
         try:
             user = pwd.getpwnam(username)
             g = grp.getgrnam(group)
-            stored = spwd.getspnam(username).sp_pwdp
-        except (KeyError, PermissionError):
+            stored = _shadow_hash(username, shadow_path)
+        except (KeyError, OSError):
             return False
         if user.pw_uid == 0 or (username not in g.gr_mem and user.pw_gid != g.gr_gid):
             return False
         if not stored or stored[0] in "!*":  # locked or no password
             return False
-        return hmac.compare_digest(crypt.crypt(password, stored) or "", stored)
+        with lock:
+            computed = _crypt(password, stored)
+        return bool(computed) and hmac.compare_digest(computed, stored)
 
     return check
 

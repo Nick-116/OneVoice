@@ -1,4 +1,5 @@
 python3-venv
+libcrypt1
 libportaudio2
 alsa-utils
 avahi-daemon
