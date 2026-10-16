@@ -1,6 +1,6 @@
 name: Release
 
-# Builds OneVoice Sender for macOS (Apple Silicon + Intel) and Windows and publishes
+# Builds OneVoice Sender for macOS (Apple Silicon + Intel), Windows and Raspberry Pi and publishes
 # a GitHub Release. Triggered by pushing a tag like v1.2.0.
 #
 # Code signing is optional and switches on automatically when these repository
@@ -146,8 +146,11 @@ jobs:
             sender/dist/*-Portable.zip
           if-no-files-found: error
 
+  raspberry-pi:
+    uses: ./.github/workflows/pi-image.yml
+
   release:
-    needs: [macos, windows]
+    needs: [macos, windows, raspberry-pi]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

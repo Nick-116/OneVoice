@@ -18,3 +18,5 @@ sender/dist/
 .env.*
 !.env.example
 docs/SENDER.md
+pi/work/
+pi/dist/

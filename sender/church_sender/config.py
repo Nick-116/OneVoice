@@ -36,10 +36,14 @@ _RESERVED_HEADERS = {
 
 
 def config_dir() -> Path:
+    if os.environ.get("ONEVOICE_CONFIG_DIR"):  # Raspberry Pi appliance: /var/lib/onevoice
+        return Path(os.environ["ONEVOICE_CONFIG_DIR"])
     return Path(platformdirs.user_config_dir(APP_DIR_NAME, APP_AUTHOR, roaming=False))
 
 
 def log_dir() -> Path:
+    if os.environ.get("ONEVOICE_LOG_DIR"):
+        return Path(os.environ["ONEVOICE_LOG_DIR"])
     return Path(platformdirs.user_log_dir(APP_DIR_NAME, APP_AUTHOR))
 
 

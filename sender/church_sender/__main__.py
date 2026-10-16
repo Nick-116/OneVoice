@@ -1,4 +1,4 @@
-"""Entry point: GUI by default, ``--headless`` for service use, ``--list-devices`` for diagnostics."""
+"""Entry point: GUI by default, ``--web`` for the Raspberry Pi appliance, ``--headless`` for service use, ``--list-devices`` for diagnostics."""
 
 from __future__ import annotations
 
@@ -31,6 +31,8 @@ def main(argv: list[str] | None = None) -> int:
     mode = p.add_mutually_exclusive_group()
     mode.add_argument("--headless", action="store_true", help="run without GUI using the saved settings (service mode)")
     mode.add_argument("--list-devices", action="store_true", help="list audio input devices and exit")
+    mode.add_argument("--web", action="store_true", help="run with a web interface instead of a window (Raspberry Pi appliance)")
+    p.add_argument("--port", type=int, default=80, help="web interface port (with --web)")
     p.add_argument("--minimized", action="store_true", help="start the GUI minimised (used by Launch at login)")
     p.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"])
     p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -39,14 +41,28 @@ def main(argv: list[str] | None = None) -> int:
     if args.list_devices:
         return _list_devices()
 
+    import os
+
+    if os.environ.get("ONEVOICE_SECRETS_FILE"):  # no desktop keychain (Raspberry Pi): 0600 file instead
+        import keyring
+
+        from .filekeyring import FileKeyring
+
+        keyring.set_keyring(FileKeyring(os.environ["ONEVOICE_SECRETS_FILE"]))
+
     from .config import load_config
     from .logsetup import setup_logging
 
-    log_file = setup_logging(args.log_level, to_stdout=args.headless)
+    log_file = setup_logging(args.log_level, to_stdout=args.headless or args.web)
     log = logging.getLogger("church_sender")
     log.info("%s %s starting (%s)%s", APP_NAME, __version__, "headless" if args.headless else "gui",
              f", log file {log_file}" if log_file else "")
     cfg = load_config()
+
+    if args.web:
+        from .webserver import run_web
+
+        return run_web(cfg, port=args.port)
 
     if args.headless:
         from .runner import run_headless

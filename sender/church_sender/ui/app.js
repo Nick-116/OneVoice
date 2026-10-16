@@ -314,6 +314,17 @@ async function init() {
   $("autoStart").checked = !!c.auto_start_stream;
   $("launchAtLogin").checked = !!c.launch_at_login;
   $("launchAtLogin").disabled = !state.autostart_supported;
+  if (state.web) {
+    // Raspberry Pi: streaming runs on the Pi from boot; this page only sets it up.
+    $("launchAtLoginRow").hidden = true;
+    $("autoStartText").textContent = "Start streaming whenever the Pi starts";
+    $("tokenNote").textContent = "Stored on the Pi, readable only by OneVoice Sender.";
+    $("signOut").hidden = false;
+    $("signOut").addEventListener("click", async () => {
+      await fetch("/logout", { method: "POST", headers: { "X-OneVoice": "1", "Content-Type": "application/json" }, body: "{}" });
+      location.href = "/login";
+    });
+  }
   for (const name of c.header_names) headerRow(name, true);
   await updateUrlWarning();
 
@@ -361,6 +372,27 @@ async function init() {
 
   pollLoop();
   if (state.should_autostart) setTimeout(() => call("start_streaming").catch(() => {}), 800);
+}
+
+// ---------------------------------------------------------------- Raspberry Pi (web interface)
+// Same methods as the desktop js_api, as POST /api/<method> to the Pi.
+function httpApi() {
+  return new Proxy({}, {
+    get: (_t, method) => async (...args) => {
+      const res = await fetch(`/api/${String(method)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-OneVoice": "1" },
+        body: JSON.stringify({ args }),
+      });
+      if (res.status === 401) {
+        location.href = "/login";
+        throw new Error("Signed out");
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      return data.result;
+    },
+  });
 }
 
 // ---------------------------------------------------------------- preview mode (plain browser)
@@ -411,5 +443,6 @@ function start(withApi) {
   init();
 }
 if (new URLSearchParams(location.search).has("demo")) start(demoApi());
+else if (document.querySelector('meta[name="onevoice-backend"][content="http"]')) start(httpApi());
 else if (window.pywebview && window.pywebview.api && window.pywebview.api.initial_state) start(window.pywebview.api);
 else window.addEventListener("pywebviewready", () => start(window.pywebview.api));

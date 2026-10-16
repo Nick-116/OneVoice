@@ -1,0 +1,6 @@
+
+  OneVoice Sender
+  Set up and monitor it in a browser: http://onevoice-sender.local
+  Service:  sudo systemctl status onevoice-sender
+  Logs:     sudo journalctl -u onevoice-sender -f
+

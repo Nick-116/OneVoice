@@ -19,7 +19,10 @@
         <div class="brand-sub" id="version">Live audio for captions</div>
       </div>
     </div>
-    <div class="pill" id="statePill"><span class="dot"></span><span id="stateText">Not streaming</span></div>
+    <div class="title-actions">
+      <div class="pill" id="statePill"><span class="dot"></span><span id="stateText">Not streaming</span></div>
+      <button class="btn ghost small" type="button" id="signOut" hidden>Sign out</button>
+    </div>
   </header>
 
   <main class="grid">
@@ -86,7 +89,7 @@
               <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
-          <small>Stored in your system keychain, never in plain files.</small>
+          <small id="tokenNote">Stored in your system keychain, never in plain files.</small>
         </label>
 
         <h3>Audio input</h3>
@@ -121,8 +124,8 @@
 
         <details class="advanced">
           <summary>Startup &amp; advanced</summary>
-          <label class="toggle"><input type="checkbox" id="autoStart" /><span class="switch"></span>Start streaming when the app opens</label>
-          <label class="toggle"><input type="checkbox" id="launchAtLogin" /><span class="switch"></span>Launch when this computer starts</label>
+          <label class="toggle"><input type="checkbox" id="autoStart" /><span class="switch"></span><span id="autoStartText">Start streaming when the app opens</span></label>
+          <label class="toggle" id="launchAtLoginRow"><input type="checkbox" id="launchAtLogin" /><span class="switch"></span>Launch when this computer starts</label>
           <div class="field">
             <span>Extra HTTP headers <small>(e.g. a reverse-proxy access token)</small></span>
             <div id="headers"></div>

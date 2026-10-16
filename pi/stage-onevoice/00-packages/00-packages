@@ -1,0 +1,5 @@
+python3-venv
+libportaudio2
+alsa-utils
+avahi-daemon
+unattended-upgrades

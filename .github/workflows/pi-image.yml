@@ -1,0 +1,26 @@
+name: Raspberry Pi image
+
+# Builds the OneVoice Sender image for Raspberry Pi 4/5 (64-bit) with pi-gen.
+# Called by the Release workflow; can also be run by hand to test (Actions -> Run workflow).
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: ./pi/build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: raspberry-pi
+          path: pi/dist/*.img.xz
+          compression-level: 0  # already xz-compressed
+          if-no-files-found: error
